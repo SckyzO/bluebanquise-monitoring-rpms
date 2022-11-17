@@ -1,0 +1,35 @@
+version: '2'
+
+services:
+  centos7:
+    image: rpmbuild/centos7
+    environment:
+    - VERSION
+    - PKG
+    volumes:
+    - .:/workspace
+    command: /workspace/build.sh ${PKG}
+
+  rockylinux8:
+    build:
+      context: .
+      dockerfile: Dockerfile.builder8
+    image: sckyzo/prometheus-builder:rockylinux8
+    environment:
+    - VERSION
+    - PKG
+    volumes:
+    - .:/workspace
+    command: /workspace/build.sh ${PKG}
+
+  rockylinux9:
+    build:
+      context: .
+      dockerfile: Dockerfile.builder9
+    image: sckyzo/prometheus-builder:rockylinux9
+    environment:
+    - VERSION
+    - PKG
+    volumes:
+    - .:/workspace
+    command: /workspace/build.sh ${PKG}

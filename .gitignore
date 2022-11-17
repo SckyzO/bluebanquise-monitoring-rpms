@@ -1,0 +1,4 @@
+prometheus-*.tar.gz
+exporters/*.tar.gz
+alertmanager/*.tar.gz
+build/
