@@ -42,8 +42,7 @@ results, and can trigger alerts f some condition is observed to be true.
 
 %files
 %defattr(-,root,root)
-%config(noreplace) /etc/prometheus/prometheus.yml
-/var/lib/prometheus/consoles
+%config(noreplace) /var/lib/prometheus/consoles
 /var/lib/prometheus/console_libraries
 /var/lib/prometheus/data
 %attr(-,root,root)/usr/local/bin/prometheus
