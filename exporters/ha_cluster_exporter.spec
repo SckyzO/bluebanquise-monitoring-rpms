@@ -8,7 +8,7 @@
 Name:          %{pkgname}
 Version:       %{pkgversion}
 Release:       %{pkgrevision}%{?dist}
-Summary:       HA Cluster expoter
+Summary:       HA Cluster exporter
 License:       Apache License 2.0
 URL:           https://github.com/ClusterLabs/ha_cluster_exporter
 
