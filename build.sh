@@ -151,15 +151,19 @@ build_lvm_exporter() {
 }
 
 build_slurm_exporter() {
-  export VERSION=1.19 OS=linux ARCH=amd64
-  sudo wget https://dl.google.com/go/go$VERSION.$OS-$ARCH.tar.gz
-  tar -xzvf go$VERSION.$OS-$ARCH.tar.gz
+  VERSION="0.21"
+  sudo dnf install sinfo squeue sdiag
+  export GO_VERSION=1.19 OS=linux ARCH=amd64
+  sudo wget https://dl.google.com/go/go$GO_VERSION.$OS-$ARCH.tar.gz
+  tar -xzvf go$GO_VERSION.$OS-$ARCH.tar.gz
   export PATH=$PWD/go/bin:$PATH
   sudo git clone https://github.com/vpenso/prometheus-slurm-exporter.git
   cd prometheus-slurm-exporter
   sudo git checkout development
   sudo make
-
+  tar -czf prometheus-slurm-exporter-${VERSION}.tar.gz prometheus-slurm-exporter
+  sudo mv prometheus-slurm-exporter-${VERSION}.tar.gz /workspace/exporters/
+  
   sudo rpmbuild \
     --clean \
     --define "pkgversion ${VERSION}" \
