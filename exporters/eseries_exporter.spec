@@ -10,7 +10,7 @@ Version:       %{pkgversion}
 Release:       %{pkgrevision}%{?dist}
 Summary:       NetApp E-Series Prometheus exporter
 License:       Apache License 2.0
-URL:           https://github.com/prometheus-community/eseries_exporter
+URL:           https://github.com/treydock/eseries_exporter
 
 Source0:       eseries_exporter-%{version}.tar.gz
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
