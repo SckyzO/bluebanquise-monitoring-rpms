@@ -43,6 +43,9 @@ slurm_exporter:
 eseries_exporter:
 	PKG=eseries_exporter docker-compose run --rm $(RPM_DIST)
 
+gpfs_exporter:
+	PKG=gpfs_exporter docker-compose run --rm $(RPM_DIST)
+
 clean:
 	rm -f build/* \
 		prometheus/prometheus-*.tar.gz \
@@ -56,4 +59,5 @@ clean:
 		exporters/snmp_exporter-*.tar.gz \
 		exporters/lvm_exporter-*.tar.gz \
 		exporters/slurm_exporter-*.tar.gz \
-		exporters/eseries_exporter-*.tar.gz
+		exporters/eseries_exporter-*.tar.gz \
+		exporters/gpfs_exporter-*.tar.gz 		

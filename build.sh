@@ -60,7 +60,6 @@ build_ping_exporter() {
   sudo cp /tmp/rpm/RPMS/*/*.rpm /workspace/build/
 }
 
-
 build_ha_cluster_exporter() {
   # ha_cluster_exporter
   VERSION="1.3.0"
@@ -90,7 +89,6 @@ build_bind_exporter() {
 
   sudo cp /tmp/rpm/RPMS/*/*.rpm /workspace/build/
 }
-
 
 build_process_exporter() {
   # process_exporter version
@@ -137,7 +135,6 @@ build_snmp_exporter() {
   sudo cp /tmp/rpm/RPMS/*/*.rpm /workspace/build/
 }
 
-
 build_lvm_exporter() {
   # snmp_exporter version
   VERSION="0.3.1"
@@ -173,7 +170,6 @@ build_slurm_exporter() {
   sudo cp /tmp/rpm/RPMS/*/*.rpm /workspace/build/ 
 }
 
-
 build_eseries_exporter() {
   # eseries_exporter version
   VERSION="1.3.0"
@@ -189,6 +185,20 @@ build_eseries_exporter() {
   sudo cp /tmp/rpm/RPMS/*/*.rpm /workspace/build/
 }
 
+build_gpfs_exporter() {
+  # eseries_exporter version
+  VERSION="2.2.0"
+  sudo wget https://github.com/treydock/gpfs_exporter/releases/download/v${VERSION}/gpfs_exporter-${VERSION}.linux-amd64.tar.gz -O /workspace/exporters/gpfs_exporter-${VERSION}.tar.gz -c
+
+  sudo rpmbuild \
+    --clean \
+    --define "pkgversion ${VERSION}" \
+    --define "_topdir /tmp/rpm" \
+    --define "_sourcedir /workspace/exporters" \
+    -bb /workspace/exporters/gpfs_exporter.spec
+
+  sudo cp /tmp/rpm/RPMS/*/*.rpm /workspace/build/
+}
 #sudo yum install wget epel-release -y
 sudo mkdir -p /workspace/build/
 
@@ -228,6 +238,9 @@ case $1 in
   ;;
   eseries_exporter )
   build_eseries_exporter 
+  ;;
+  gpfs_exporter )
+  build_gpfs_exporter 
   ;;
   all )
   build_prometheus
