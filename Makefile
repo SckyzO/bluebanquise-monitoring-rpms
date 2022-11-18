@@ -17,28 +17,28 @@ node_exporter:
 	PKG=node_exporter docker-compose run --rm $(RPM_DIST)
 
 ping_exporter:
-  	PKG=ping_exporter docker-compose run --rm $(RPM_DIST)
+	PKG=ping_exporter docker-compose run --rm $(RPM_DIST)
 
 ha_cluster_exporter:
-  	PKG=ha_cluster_exporter docker-compose run --rm $(RPM_DIST)
+	PKG=ha_cluster_exporter docker-compose run --rm $(RPM_DIST)
 
 bind_exporter:
-  	PKG=bind_exporter docker-compose run --rm $(RPM_DIST)
+	PKG=bind_exporter docker-compose run --rm $(RPM_DIST)
 
 process_exporter:
-  	PKG=process_exporter docker-compose run --rm $(RPM_DIST)
+	PKG=process_exporter docker-compose run --rm $(RPM_DIST)
 
 ipmi_exporter:
-  	PKG=ipmi_exporter docker-compose run --rm $(RPM_DIST)
+	PKG=ipmi_exporter docker-compose run --rm $(RPM_DIST)
 
 snmp_exporter:
-  	PKG=snmp_exporter docker-compose run --rm $(RPM_DIST)
+	PKG=snmp_exporter docker-compose run --rm $(RPM_DIST)
 
 lvm_exporter:
-  	PKG=lvm_exporter docker-compose run --rm $(RPM_DIST)
+	PKG=lvm_exporter docker-compose run --rm $(RPM_DIST)
 
 slurm_exporter:
-  	PKG=slurm_exporter docker-compose run --rm $(RPM_DIST)
+	PKG=slurm_exporter docker-compose run --rm $(RPM_DIST)
 
 eseries_exporter:
 	PKG=eseries_exporter docker-compose run --rm $(RPM_DIST)
