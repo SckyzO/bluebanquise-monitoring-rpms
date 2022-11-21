@@ -1,6 +1,7 @@
 #RPM_DIST?=centos7
 RPM_DIST?=rockylinux8
 #RPM_DIST?=rockylinux9
+SLURM_EXPORTER_VERSION = 0.20
 
 .PHONY: *
 
@@ -38,7 +39,29 @@ lvm_exporter:
 	PKG=lvm_exporter docker-compose run --rm $(RPM_DIST)
 
 slurm_exporter:
+	rm -Rf slurm-docker-cluster
+	git clone https://github.com/giovtorres/slurm-docker-cluster
+	cd slurm-docker-cluster; \
+	docker compose build; \
+	docker compose up -d; \
+	docker exec -ti slurmctld bash -c "dnf install go -y; \
+							cd /tmp; \
+							git clone https://github.com/vpenso/prometheus-slurm-exporter.git; \
+							cd prometheus-slurm-exporter; \
+							git checkout development; \
+							make;" 
+	docker cp "slurmctld:/tmp/prometheus-slurm-exporter/bin/prometheus-slurm-exporter" "."
+	mkdir -p "slurm_exporter-$(SLURM_EXPORTER_VERSION).linux-amd64"
+	mv prometheus-slurm-exporter slurm_exporter-$(SLURM_EXPORTER_VERSION).linux-amd64/
+	tar -czf slurm_exporter-$(SLURM_EXPORTER_VERSION).tar.gz slurm_exporter-$(SLURM_EXPORTER_VERSION).linux-amd64
+	mv ./slurm_exporter-$(SLURM_EXPORTER_VERSION).tar.gz exporters/slurm_exporter-$(SLURM_EXPORTER_VERSION).tar.gz
+	rm -f slurm_exporter-$(SLURM_EXPORTER_VERSION).linux-amd64
+	cd slurm-docker-cluster; \
+	docker compose down
+	rm -Rf slurm-docker-cluster
 	PKG=slurm_exporter docker-compose run --rm $(RPM_DIST)
+
+
 
 eseries_exporter:
 	PKG=eseries_exporter docker-compose run --rm $(RPM_DIST)
@@ -50,14 +73,5 @@ clean:
 	rm -f build/* \
 		prometheus/prometheus-*.tar.gz \
 		alertmanager/alertmanager-*.tar.gz \
-		exporters/node_exporter-*.tar.gz \
-		exporters/ping_exporter-*.tar.gz \
-		exporters/ha_cluster_exporter-*.tar.gz \
-		exporters/bind_exporter-*.tar.gz \
-		exporters/process_exporter-*.tar.gz \
-		exporters/ipmi_exporter-*.tar.gz \
-		exporters/snmp_exporter-*.tar.gz \
-		exporters/lvm_exporter-*.tar.gz \
-		exporters/slurm_exporter-*.tar.gz \
-		exporters/eseries_exporter-*.tar.gz \
-		exporters/gpfs_exporter-*.tar.gz 		
+		exporters/*.tar.gz \
+		exporters/*.gz

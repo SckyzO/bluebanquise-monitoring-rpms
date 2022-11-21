@@ -151,16 +151,7 @@ build_lvm_exporter() {
 }
 
 build_slurm_exporter() {
-  VERSION="0.21"
-  sudo dnf config-manager --set-enabled powertools
-  sudo dnf install slurm which bash go -y
-  cd /tmp
-  git clone https://github.com/vpenso/prometheus-slurm-exporter.git
-  cd prometheus-slurm-exporter
-  git checkout development
-  make
-  tar -czf prometheus-slurm-exporter-${VERSION}.tar.gz prometheus-slurm-exporter
-  mv prometheus-slurm-exporter-${VERSION}.tar.gz /workspace/exporters/
+  VERSION="0.20"
   
   sudo rpmbuild \
     --clean \
