@@ -54,8 +54,8 @@ slurm_exporter:
 	mkdir -p "slurm_exporter-$(SLURM_EXPORTER_VERSION).linux-amd64"
 	mv prometheus-slurm-exporter slurm_exporter-$(SLURM_EXPORTER_VERSION).linux-amd64/
 	tar -czf slurm_exporter-$(SLURM_EXPORTER_VERSION).tar.gz slurm_exporter-$(SLURM_EXPORTER_VERSION).linux-amd64
-	mv ./slurm_exporter-$(SLURM_EXPORTER_VERSION).tar.gz exporters/slurm_exporter-$(SLURM_EXPORTER_VERSION).tar.gz
-	rm -f slurm_exporter-$(SLURM_EXPORTER_VERSION).linux-amd64
+	mv ./slurm_exporter-$(SLURM_EXPORTER_VERSION).tar.gz archives/slurm_exporter-$(SLURM_EXPORTER_VERSION).tar.gz
+	rm -Rf slurm_exporter-$(SLURM_EXPORTER_VERSION).linux-amd64
 	cd slurm-docker-cluster; \
 	docker compose down
 	rm -Rf slurm-docker-cluster
@@ -71,6 +71,4 @@ gpfs_exporter:
 
 clean:
 	rm -f build/* \
-		prometheus/archives/prometheus-*.tar.gz \
-		alertmanager/archives/alertmanager-*.tar.gz \
-		exporters/archives/*
+		archives/*
