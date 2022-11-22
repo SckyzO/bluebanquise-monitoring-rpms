@@ -31,7 +31,7 @@ build_alertmanager() {
   	--define "pkgversion ${VERSION}" \
   	--define "_topdir /tmp/rpm" \
   	--define "_sourcedir /workspace/archives" \
-	-bb /workspace/alertmanager/spec/alertmanager.spec
+	-ba /workspace/alertmanager/spec/alertmanager.spec
 
   sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
   sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
@@ -47,7 +47,7 @@ build_node_exporter() {
     --define "pkgversion ${VERSION}" \
     --define "_topdir /tmp/rpm" \
     --define "_sourcedir /workspace/archives" \
-    -bb /workspace/exporters/spec/node_exporter.spec
+    -ba /workspace/exporters/spec/node_exporter.spec
 
   sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
   sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
@@ -63,7 +63,7 @@ build_ping_exporter() {
     --define "pkgversion ${VERSION}" \
     --define "_topdir /tmp/rpm" \
     --define "_sourcedir /workspace/archives" \
-    -bb /workspace/exporters/spec/ping_exporter.spec
+    -ba /workspace/exporters/spec/ping_exporter.spec
 
   sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
   sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
@@ -86,7 +86,7 @@ build_ha_cluster_exporter() {
     --define "pkgversion ${VERSION}" \
     --define "_topdir /tmp/rpm" \
     --define "_sourcedir /workspace/archives" \
-    -bb /workspace/exporters/spec/ha_cluster_exporter.spec
+    -ba /workspace/exporters/spec/ha_cluster_exporter.spec
 
   sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
   sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
@@ -102,7 +102,7 @@ build_bind_exporter() {
     --define "pkgversion ${VERSION}" \
     --define "_topdir /tmp/rpm" \
     --define "_sourcedir /workspace/archives" \
-    -bb /workspace/exporters/spec/bind_exporter.spec
+    -ba /workspace/exporters/spec/bind_exporter.spec
 
   sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
   sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
@@ -118,7 +118,7 @@ build_process_exporter() {
     --define "pkgversion ${VERSION}" \
     --define "_topdir /tmp/rpm" \
     --define "_sourcedir /workspace/archives" \
-    -bb /workspace/exporters/spec/process_exporter.spec
+    -ba /workspace/exporters/spec/process_exporter.spec
 
   sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
   sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
@@ -134,7 +134,7 @@ build_ipmi_exporter() {
     --define "pkgversion ${VERSION}" \
     --define "_topdir /tmp/rpm" \
     --define "_sourcedir /workspace/archives" \
-    -bb /workspace/exporters/spec/ipmi_exporter.spec
+    -ba /workspace/exporters/spec/ipmi_exporter.spec
 
   sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
   sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
@@ -150,7 +150,7 @@ build_snmp_exporter() {
     --define "pkgversion ${VERSION}" \
     --define "_topdir /tmp/rpm" \
     --define "_sourcedir /workspace/archives" \
-    -bb /workspace/exporters/spec/snmp_exporter.spec
+    -ba /workspace/exporters/spec/snmp_exporter.spec
 
   sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
   sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
@@ -166,7 +166,7 @@ build_lvm_exporter() {
     --define "pkgversion ${VERSION}" \
     --define "_topdir /tmp/rpm" \
     --define "_sourcedir /workspace/archives" \
-    -bb /workspace/exporters/spec/lvm_exporter.spec
+    -ba /workspace/exporters/spec/lvm_exporter.spec
 
   sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
   sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
@@ -180,7 +180,7 @@ build_slurm_exporter() {
     --define "pkgversion ${VERSION}" \
     --define "_topdir /tmp/rpm" \
     --define "_sourcedir /workspace/archives" \
-    -bb /workspace/exporters/spec/slurm_exporter.spec
+    -ba /workspace/exporters/spec/slurm_exporter.spec
 
   sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
   sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
@@ -196,7 +196,7 @@ build_eseries_exporter() {
     --define "pkgversion ${VERSION}" \
     --define "_topdir /tmp/rpm" \
     --define "_sourcedir /workspace/archives" \
-    -bb /workspace/exporters/spec/eseries_exporter.spec
+    -ba /workspace/exporters/spec/eseries_exporter.spec
 
   sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
   sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
@@ -212,7 +212,7 @@ build_gpfs_exporter() {
     --define "pkgversion ${VERSION}" \
     --define "_topdir /tmp/rpm" \
     --define "_sourcedir /workspace/archives" \
-    -bb /workspace/exporters/spec/gpfs_exporter.spec
+    -ba /workspace/exporters/spec/gpfs_exporter.spec
 
   sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
   sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
