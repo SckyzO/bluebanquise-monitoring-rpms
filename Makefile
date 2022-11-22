@@ -55,7 +55,7 @@ slurm_exporter:
 	cd slurm-docker-cluster; \
 	docker compose build; \
 	docker compose up -d; \
-	docker exec -T slurmctld bash -c "dnf install go -y; \
+	docker exec -t slurmctld bash -c "dnf install go -y; \
 							cd /tmp; \
 							git clone https://github.com/vpenso/prometheus-slurm-exporter.git; \
 							cd prometheus-slurm-exporter; \
