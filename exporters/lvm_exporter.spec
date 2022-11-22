@@ -24,7 +24,7 @@ are reported, either as a standalone metric for numeric values or as a label on 
 
 
 %prep
-%setup -n prometheus-lvm-exporter-%{version}.linux-amd64
+%setup -n prometheus-lvm-exporter_%{version}_linux_amd64
 
 %build
 

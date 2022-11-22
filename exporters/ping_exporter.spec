@@ -25,14 +25,14 @@ The go-ping library is build and maintained by Digineo GmbH.
 
 
 %prep
-%setup -n ping-exporter-%{version}.linux-amd64
+%setup -n ping_exporter-%{version}.Linux-x86_64
 
 %build
 
 %pre
 
 %install
-%{__install} -D -m 755 ping-exporter %{buildroot}/usr/local/bin/ping_exporter
+%{__install} -D -m 755 ping_exporter %{buildroot}/usr/local/bin/ping_exporter
 
 
 %files

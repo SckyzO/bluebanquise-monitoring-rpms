@@ -12,7 +12,7 @@ build_prometheus() {
   	--define "_sourcedir /workspace/prometheus" \
   	-bb /workspace/prometheus/prometheus.spec
 
-  sudo cp /tmp/rpm/RPMS/*/*.rpm /workspace/build/
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/
 }
 
 build_alertmanager() {
@@ -27,7 +27,7 @@ build_alertmanager() {
   	--define "_sourcedir /workspace/alertmanager" \
 	-bb /workspace/alertmanager/alertmanager.spec
 
-  sudo cp /tmp/rpm/RPMS/*/*.rpm /workspace/build/
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/
 }
 
 build_node_exporter() {
@@ -42,7 +42,7 @@ build_node_exporter() {
     --define "_sourcedir /workspace/exporters" \
     -bb /workspace/exporters/node_exporter.spec
 
-  sudo cp /tmp/rpm/RPMS/*/*.rpm /workspace/build/
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/
 }
 
 build_ping_exporter() {
@@ -57,13 +57,19 @@ build_ping_exporter() {
     --define "_sourcedir /workspace/exporters" \
     -bb /workspace/exporters/ping_exporter.spec
 
-  sudo cp /tmp/rpm/RPMS/*/*.rpm /workspace/build/
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/
 }
 
 build_ha_cluster_exporter() {
   # ha_cluster_exporter
   VERSION="1.3.0"
   sudo wget https://github.com/ClusterLabs/ha_cluster_exporter/releases/download/${VERSION}/ha_cluster_exporter-amd64.gz -O /workspace/exporters/ha_cluster_exporter-${VERSION}.gz -c
+  cd /workspace/exporters
+  sudo gunzip -f ha_cluster_exporter-${VERSION}.gz
+  sudo test -d ha_cluster_exporter-${VERSION}.linux-amd64 || mkdir ha_cluster_exporter-${VERSION}.linux-amd64
+  sudo mv ha_cluster_exporter-${VERSION} ha_cluster_exporter-${VERSION}.linux-amd64/ha_cluster_exporter
+  sudo tar czf ha_cluster_exporter-${VERSION}.tar.gz ha_cluster_exporter-${VERSION}.linux-amd64/
+  sudo rm -Rf ha_cluster_exporter-${VERSION}.linux-amd64/
 
   sudo rpmbuild \
     --clean \
@@ -72,7 +78,7 @@ build_ha_cluster_exporter() {
     --define "_sourcedir /workspace/exporters" \
     -bb /workspace/exporters/ha_cluster_exporter.spec
 
-  sudo cp /tmp/rpm/RPMS/*/*.rpm /workspace/build/
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/
 }
 
 build_bind_exporter() {
@@ -87,7 +93,7 @@ build_bind_exporter() {
     --define "_sourcedir /workspace/exporters" \
     -bb /workspace/exporters/bind_exporter.spec
 
-  sudo cp /tmp/rpm/RPMS/*/*.rpm /workspace/build/
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/
 }
 
 build_process_exporter() {
@@ -102,7 +108,7 @@ build_process_exporter() {
     --define "_sourcedir /workspace/exporters" \
     -bb /workspace/exporters/process_exporter.spec
 
-  sudo cp /tmp/rpm/RPMS/*/*.rpm /workspace/build/
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/
 }
 
 build_ipmi_exporter() {
@@ -117,7 +123,7 @@ build_ipmi_exporter() {
     --define "_sourcedir /workspace/exporters" \
     -bb /workspace/exporters/ipmi_exporter.spec
 
-  sudo cp /tmp/rpm/RPMS/*/*.rpm /workspace/build/
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/
 }
 
 build_snmp_exporter() {
@@ -132,7 +138,7 @@ build_snmp_exporter() {
     --define "_sourcedir /workspace/exporters" \
     -bb /workspace/exporters/snmp_exporter.spec
 
-  sudo cp /tmp/rpm/RPMS/*/*.rpm /workspace/build/
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/
 }
 
 build_lvm_exporter() {
@@ -147,7 +153,7 @@ build_lvm_exporter() {
     --define "_sourcedir /workspace/exporters" \
     -bb /workspace/exporters/lvm_exporter.spec
 
-  sudo cp /tmp/rpm/RPMS/*/*.rpm /workspace/build/
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/
 }
 
 build_slurm_exporter() {
@@ -160,7 +166,7 @@ build_slurm_exporter() {
     --define "_sourcedir /workspace/exporters" \
     -bb /workspace/exporters/slurm_exporter.spec
 
-  sudo cp /tmp/rpm/RPMS/*/*.rpm /workspace/build/ 
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/ 
 }
 
 build_eseries_exporter() {
@@ -175,7 +181,7 @@ build_eseries_exporter() {
     --define "_sourcedir /workspace/exporters" \
     -bb /workspace/exporters/eseries_exporter.spec
 
-  sudo cp /tmp/rpm/RPMS/*/*.rpm /workspace/build/
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/
 }
 
 build_gpfs_exporter() {
@@ -190,7 +196,7 @@ build_gpfs_exporter() {
     --define "_sourcedir /workspace/exporters" \
     -bb /workspace/exporters/gpfs_exporter.spec
 
-  sudo cp /tmp/rpm/RPMS/*/*.rpm /workspace/build/
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/
 }
 #sudo yum install wget epel-release -y
 sudo mkdir -p /workspace/build/

@@ -1,11 +1,13 @@
 # -*- dockerfile -*-
 FROM rockylinux:8
 
+ENV UID=$UID GID=$GID
+
 RUN yum install -y make wget git sudo epel-release yum-utils rpm-build && \
     yum install -y python2 python2-pip python2-rpm-macros python2-setuptools && \
     yum clean all
 
-RUN useradd builder -u 1000 -m -G users,wheel && \
+RUN useradd builder -u $UID -m -G users,wheel && \
     echo "builder ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers && \
     echo "# macros"                      >  /home/builder/.rpmmacros && \
     echo "%_topdir    /home/builder/rpm" >> /home/builder/.rpmmacros && \

@@ -27,7 +27,7 @@ maps the data for you.
 
 
 %prep
-%setup -n snmp-exporter-%{version}.linux-amd64
+%setup -n snmp_exporter-%{version}.linux-amd64
 
 %build
 
@@ -36,7 +36,7 @@ maps the data for you.
 %install
 %{__install} -d -m 755 %{buildroot}/etc/snmp_exporter
 
-%{__install} -D -m 755 snmp-exporter %{buildroot}/usr/local/bin/snmp_exporter
+%{__install} -D -m 755 snmp_exporter %{buildroot}/usr/local/bin/snmp_exporter
 
 
 %files

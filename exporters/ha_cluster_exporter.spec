@@ -28,7 +28,7 @@ Obsoletes:     ha_cluster_exporter
 %pre
 
 %install
-%{__install} -D -m 755 ha_cluster_exporter-amd64 %{buildroot}/usr/local/bin/ha_cluster_exporter
+%{__install} -D -m 755 ha_cluster_exporter %{buildroot}/usr/local/bin/ha_cluster_exporter
 
 
 %files
