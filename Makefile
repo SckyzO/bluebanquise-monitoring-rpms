@@ -71,7 +71,6 @@ gpfs_exporter:
 
 clean:
 	rm -f build/* \
-		prometheus/prometheus-*.tar.gz \
-		alertmanager/alertmanager-*.tar.gz \
-		exporters/*.tar.gz \
-		exporters/*.gz
+		prometheus/archives/prometheus-*.tar.gz \
+		alertmanager/archives/alertmanager-*.tar.gz \
+		exporters/archives/*
