@@ -64,7 +64,8 @@ build_ha_cluster_exporter() {
   # ha_cluster_exporter
   VERSION="1.3.0"
   sudo wget https://github.com/ClusterLabs/ha_cluster_exporter/releases/download/${VERSION}/ha_cluster_exporter-amd64.gz -O /workspace/archives/ha_cluster_exporter-${VERSION}.gz -c
-  cd /workspace/exporters
+  
+  cd /workspace/archives
   sudo gunzip -f ha_cluster_exporter-${VERSION}.gz
   sudo test -d ha_cluster_exporter-${VERSION}.linux-amd64 || mkdir ha_cluster_exporter-${VERSION}.linux-amd64
   sudo mv ha_cluster_exporter-${VERSION} ha_cluster_exporter-${VERSION}.linux-amd64/ha_cluster_exporter
