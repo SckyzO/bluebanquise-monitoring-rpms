@@ -1,8 +1,13 @@
 #!/bin/bash -eux
 
+check_last_release() {
+  # Check last github release
+  curl --silent "https://api.github.com/repos/$1/releases/latest" | jq -r .tag_name | sed 's/^v//g'
+}
+
 build_prometheus() {
   # Prometheus version
-  VERSION="2.40.2"
+  VERSION=$(check_last_release prometheus/prometheus)
   sudo wget https://github.com/prometheus/prometheus/releases/download/v${VERSION}/prometheus-${VERSION}.linux-amd64.tar.gz -O /workspace/archives/prometheus-${VERSION}.tar.gz -c
 
   sudo rpmbuild \
@@ -17,7 +22,7 @@ build_prometheus() {
 
 build_alertmanager() {
   # alertmanager version
-  VERSION="0.24.0"
+  VERSION=$(check_last_release prometheus/alertmanager)
   sudo wget https://github.com/prometheus/alertmanager/releases/download/v${VERSION}/alertmanager-${VERSION}.linux-amd64.tar.gz -O /workspace/archives/alertmanager-${VERSION}.tar.gz -c
 
   sudo rpmbuild \
@@ -32,7 +37,7 @@ build_alertmanager() {
 
 build_node_exporter() {
   # node_exporter version
-  VERSION="1.4.0"
+  VERSION=$(check_last_release prometheus/node_exporter)
   sudo wget https://github.com/prometheus/node_exporter/releases/download/v${VERSION}/node_exporter-${VERSION}.linux-amd64.tar.gz -O /workspace/archives/node_exporter-${VERSION}.tar.gz -c
 
   sudo rpmbuild \
@@ -47,7 +52,7 @@ build_node_exporter() {
 
 build_ping_exporter() {
   # ping_exporter version
-  VERSION="0.4.6"
+  VERSION=$(check_last_release jaxxstorm/ping_exporter)
   sudo wget https://github.com/jaxxstorm/ping_exporter/releases/download/${VERSION}/ping_exporter-${VERSION}.Linux-x86_64.tar.gz -O /workspace/archives/ping_exporter-${VERSION}.tar.gz -c
 
   sudo rpmbuild \
@@ -62,12 +67,12 @@ build_ping_exporter() {
 
 build_ha_cluster_exporter() {
   # ha_cluster_exporter
-  VERSION="1.3.0"
+  VERSION=$(check_last_release ClusterLabs/ha_cluster_exporter)
   sudo wget https://github.com/ClusterLabs/ha_cluster_exporter/releases/download/${VERSION}/ha_cluster_exporter-amd64.gz -O /workspace/archives/ha_cluster_exporter-${VERSION}.gz -c
   
   cd /workspace/archives
   sudo gunzip -f ha_cluster_exporter-${VERSION}.gz
-  sudo test -d ha_cluster_exporter-${VERSION}.linux-amd64 || mkdir ha_cluster_exporter-${VERSION}.linux-amd64
+  sudo test -d ha_cluster_exporter-${VERSION}.linux-amd64 || sudo mkdir ha_cluster_exporter-${VERSION}.linux-amd64
   sudo mv ha_cluster_exporter-${VERSION} ha_cluster_exporter-${VERSION}.linux-amd64/ha_cluster_exporter
   sudo tar czf ha_cluster_exporter-${VERSION}.tar.gz ha_cluster_exporter-${VERSION}.linux-amd64/
   sudo rm -Rf ha_cluster_exporter-${VERSION}.linux-amd64/
@@ -84,7 +89,7 @@ build_ha_cluster_exporter() {
 
 build_bind_exporter() {
   # bind_exporter version
-  VERSION="0.6.0"
+  VERSION=$(check_last_release prometheus-community/bind_exporter)
   sudo wget https://github.com/prometheus-community/bind_exporter/releases/download/v${VERSION}/bind_exporter-${VERSION}.linux-amd64.tar.gz -O /workspace/archives/bind_exporter-${VERSION}.tar.gz -c
 
   sudo rpmbuild \
@@ -99,7 +104,7 @@ build_bind_exporter() {
 
 build_process_exporter() {
   # process_exporter version
-  VERSION="0.7.10"
+  VERSION=$(check_last_release ncabatoff/process-exporter)
   sudo wget https://github.com/ncabatoff/process-exporter/releases/download/v${VERSION}/process-exporter-${VERSION}.linux-amd64.tar.gz -O /workspace/archives/process_exporter-${VERSION}.tar.gz -c
 
   sudo rpmbuild \
@@ -114,7 +119,7 @@ build_process_exporter() {
 
 build_ipmi_exporter() {
   # ipmi_exporter version
-  VERSION="1.6.1"
+  VERSION=$(check_last_release prometheus-community/ipmi_exporter)
   sudo wget https://github.com/prometheus-community/ipmi_exporter/releases/download/v${VERSION}/ipmi_exporter-${VERSION}.linux-amd64.tar.gz -O /workspace/archives/ipmi_exporter-${VERSION}.tar.gz -c
 
   sudo rpmbuild \
@@ -129,7 +134,7 @@ build_ipmi_exporter() {
 
 build_snmp_exporter() {
   # snmp_exporter version
-  VERSION="0.20.0"
+  VERSION=$(check_last_release prometheus/snmp_exporter)
   sudo wget https://github.com/prometheus/snmp_exporter/releases/download/v${VERSION}/snmp_exporter-${VERSION}.linux-amd64.tar.gz -O /workspace/archives/snmp_exporter-${VERSION}.tar.gz -c
 
   sudo rpmbuild \
@@ -144,7 +149,7 @@ build_snmp_exporter() {
 
 build_lvm_exporter() {
   # snmp_exporter version
-  VERSION="0.3.1"
+  VERSION=$(check_last_release hansmi/prometheus-lvm-exporter)
   sudo wget https://github.com/hansmi/prometheus-lvm-exporter/releases/download/v${VERSION}/prometheus-lvm-exporter_${VERSION}_linux_amd64.tar.gz -O /workspace/archives/lvm_exporter-${VERSION}.tar.gz -c
 
   sudo rpmbuild \
@@ -158,7 +163,7 @@ build_lvm_exporter() {
 }
 
 build_slurm_exporter() {
-  VERSION="0.20"
+  VERSION=$(check_last_release vpenso/prometheus-slurm-exporter)
   
   sudo rpmbuild \
     --clean \
@@ -172,7 +177,7 @@ build_slurm_exporter() {
 
 build_eseries_exporter() {
   # eseries_exporter version
-  VERSION="1.3.0"
+  VERSION=$(check_last_release treydock/eseries_exporter)
   sudo wget https://github.com/treydock/eseries_exporter/releases/download/v${VERSION}/eseries_exporter-${VERSION}.linux-amd64.tar.gz -O /workspace/archives/eseries_exporter-${VERSION}.tar.gz -c
 
   sudo rpmbuild \
@@ -187,7 +192,7 @@ build_eseries_exporter() {
 
 build_gpfs_exporter() {
   # eseries_exporter version
-  VERSION="2.2.0"
+  VERSION=$(check_last_release treydock/gpfs_exporter)
   sudo wget https://github.com/treydock/gpfs_exporter/releases/download/v${VERSION}/gpfs_exporter-${VERSION}.linux-amd64.tar.gz -O /workspace/archives/gpfs_exporter-${VERSION}.tar.gz -c
 
   sudo rpmbuild \
@@ -243,20 +248,6 @@ case $1 in
   ;;
   gpfs_exporter )
   build_gpfs_exporter 
-  ;;
-  all )
-  build_prometheus
-  build_alertmanager
-  build_node_exporter
-  build_ping_exporter
-  build_ha_cluster_exporter
-  build_bind_exporter
-  build_process_exporter
-  build_ipmi_exporter
-  build_snmp_exporter
-  build_lvm_exporter
-  build_slurm_exporter
-  build_eseries_exporter  
   ;;
   *)    # unknown option
   echo "Unknown option."

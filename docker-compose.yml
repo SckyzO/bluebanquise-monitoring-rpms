@@ -14,7 +14,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.builder8
-    image: sckyzo/prometheus-builder:rockylinux8
+      args:
+        UID: 1001
+    image: rpmbuild/prometheus-builder:rockylinux8
     environment:
     - VERSION
     - PKG
@@ -26,7 +28,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.builder9
-    image: sckyzo/prometheus-builder:rockylinux9
+    image: rpmbuild/prometheus-builder:rockylinux9
     environment:
     - VERSION
     - PKG

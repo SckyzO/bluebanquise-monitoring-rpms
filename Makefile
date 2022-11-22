@@ -5,8 +5,19 @@ SLURM_EXPORTER_VERSION = 0.20
 
 .PHONY: *
 
-all:
-	PKG=all docker-compose run --rm $(RPM_DIST)
+all: prometheus \
+	alertmanager \
+	node_exporter \
+	ping_exporter \
+	ha_cluster_exporter \
+	bind_exporter \
+	process_exporter \
+	ipmi_exporter \
+	snmp_exporter \
+	lvm_exporter \
+	slurm_exporter \
+	eseries_exporter \
+	gpfs_exporter
 
 prometheus:
 	PKG=prometheus docker-compose run --rm $(RPM_DIST)
