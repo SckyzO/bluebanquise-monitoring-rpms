@@ -55,7 +55,7 @@ slurm_exporter:
 	cd slurm-docker-cluster; \
 	docker compose build; \
 	docker compose up -d; \
-	docker exec -ti slurmctld bash -c "dnf install go -y; \
+	docker exec -T slurmctld bash -c "dnf install go -y; \
 							cd /tmp; \
 							git clone https://github.com/vpenso/prometheus-slurm-exporter.git; \
 							cd prometheus-slurm-exporter; \
@@ -81,5 +81,7 @@ gpfs_exporter:
 	PKG=gpfs_exporter docker-compose run --rm $(RPM_DIST)
 
 clean:
-	rm -f build/* \
-		archives/*
+	rm -f \
+	build/rpms/* \
+	build/sources/* \
+	archives/*

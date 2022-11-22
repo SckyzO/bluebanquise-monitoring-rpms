@@ -15,9 +15,10 @@ build_prometheus() {
   	--define "pkgversion ${VERSION}" \
   	--define "_topdir /tmp/rpm" \
   	--define "_sourcedir /workspace/archives" \
-  	-bb /workspace/prometheus/spec/prometheus.spec
+  	-ba /workspace/prometheus/spec/prometheus.spec
 
-  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
+  sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
 }
 
 build_alertmanager() {
@@ -32,7 +33,8 @@ build_alertmanager() {
   	--define "_sourcedir /workspace/archives" \
 	-bb /workspace/alertmanager/spec/alertmanager.spec
 
-  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
+  sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
 }
 
 build_node_exporter() {
@@ -47,7 +49,8 @@ build_node_exporter() {
     --define "_sourcedir /workspace/archives" \
     -bb /workspace/exporters/spec/node_exporter.spec
 
-  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
+  sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
 }
 
 build_ping_exporter() {
@@ -62,7 +65,8 @@ build_ping_exporter() {
     --define "_sourcedir /workspace/archives" \
     -bb /workspace/exporters/spec/ping_exporter.spec
 
-  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
+  sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
 }
 
 build_ha_cluster_exporter() {
@@ -84,7 +88,8 @@ build_ha_cluster_exporter() {
     --define "_sourcedir /workspace/archives" \
     -bb /workspace/exporters/spec/ha_cluster_exporter.spec
 
-  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
+  sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
 }
 
 build_bind_exporter() {
@@ -99,7 +104,8 @@ build_bind_exporter() {
     --define "_sourcedir /workspace/archives" \
     -bb /workspace/exporters/spec/bind_exporter.spec
 
-  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
+  sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
 }
 
 build_process_exporter() {
@@ -114,7 +120,8 @@ build_process_exporter() {
     --define "_sourcedir /workspace/archives" \
     -bb /workspace/exporters/spec/process_exporter.spec
 
-  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
+  sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
 }
 
 build_ipmi_exporter() {
@@ -129,7 +136,8 @@ build_ipmi_exporter() {
     --define "_sourcedir /workspace/archives" \
     -bb /workspace/exporters/spec/ipmi_exporter.spec
 
-  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
+  sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
 }
 
 build_snmp_exporter() {
@@ -144,7 +152,8 @@ build_snmp_exporter() {
     --define "_sourcedir /workspace/archives" \
     -bb /workspace/exporters/spec/snmp_exporter.spec
 
-  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
+  sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
 }
 
 build_lvm_exporter() {
@@ -159,7 +168,8 @@ build_lvm_exporter() {
     --define "_sourcedir /workspace/archives" \
     -bb /workspace/exporters/spec/lvm_exporter.spec
 
-  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
+  sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
 }
 
 build_slurm_exporter() {
@@ -172,7 +182,8 @@ build_slurm_exporter() {
     --define "_sourcedir /workspace/archives" \
     -bb /workspace/exporters/spec/slurm_exporter.spec
 
-  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/ 
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
+  sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
 }
 
 build_eseries_exporter() {
@@ -187,7 +198,8 @@ build_eseries_exporter() {
     --define "_sourcedir /workspace/archives" \
     -bb /workspace/exporters/spec/eseries_exporter.spec
 
-  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
+  sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
 }
 
 build_gpfs_exporter() {
@@ -202,10 +214,15 @@ build_gpfs_exporter() {
     --define "_sourcedir /workspace/archives" \
     -bb /workspace/exporters/spec/gpfs_exporter.spec
 
-  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
+  sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
 }
-#sudo yum install wget epel-release -y
+
+
+if [[ $(cat /etc/os-release | grep REDHAT_SUPPORT_PRODUCT_VERSION | awk -F'=' '{print $2}' | sed 's/"//g') -le 7 ]]; then sudo yum install wget jq epel-release -y;fi
 test -d /workspace/build/ || sudo mkdir -p /workspace/build/
+test -d /workspace/build/rpms || sudo mkdir -p /workspace/build/rpms
+test -d /workspace/build/sources || sudo mkdir -p /workspace/build/sources
 test -d /workspace/archives/ || sudo mkdir -p /workspace/archives/
 
 
