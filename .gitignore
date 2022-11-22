@@ -1,3 +1,4 @@
 build/
+archives/
 */*.tar.gz
 */*.gz

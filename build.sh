@@ -206,7 +206,7 @@ build_gpfs_exporter() {
 }
 #sudo yum install wget epel-release -y
 test -d /workspace/build/ || sudo mkdir -p /workspace/build/
-test -d /workspace/archives/ || sudo mkdir -p /workspace/build/
+test -d /workspace/archives/ || sudo mkdir -p /workspace/archives/
 
 
 case $1 in
