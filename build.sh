@@ -53,6 +53,23 @@ build_node_exporter() {
   sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
 }
 
+build_node_exporter_armv7() {
+  # node_exporter version
+  VERSION=$(check_last_release prometheus/node_exporter)
+  sudo wget https://github.com/prometheus/node_exporter/releases/download/v${VERSION}/node_exporter-${VERSION}.linux-armv7.tar.gz -O /workspace/archives/node_exporter-${VERSION}_armv7.tar.gz -c
+
+  sudo rpmbuild \
+    --clean \
+    --target aarch64-linux \
+    --define "pkgversion ${VERSION}" \
+    --define "_topdir /tmp/rpm" \
+    --define "_sourcedir /workspace/archives" \
+    -ba /workspace/exporters/spec/node_exporter_arm.spec
+
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
+  sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
+}
+
 build_ping_exporter() {
   # ping_exporter version
   VERSION=$(check_last_release jaxxstorm/ping_exporter)
@@ -235,6 +252,9 @@ case $1 in
   ;;
   node_exporter )
   build_node_exporter 
+  ;;
+  node_exporter_armv7 )
+  build_node_exporter_armv7
   ;;
   ping_exporter )
   build_ping_exporter 
