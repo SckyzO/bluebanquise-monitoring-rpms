@@ -83,6 +83,9 @@ eseries_exporter:
 gpfs_exporter:
 	PKG=gpfs_exporter docker-compose run --rm $(RPM_DIST)
 
+smartctl_exporter:
+	PKG=smartctl_exporter docker-compose run --rm $(RPM_DIST)
+
 clean:
 	rm -f \
 	build/rpms/* \

@@ -40,5 +40,5 @@ The go-ping library is build and maintained by Digineo GmbH.
 %attr(-, root, root) /usr/local/bin/ping_exporter
 
 %changelog
-* Wed Nov 17 2022 Thomas Bourcey <sckyzo@gmail.com> - 1.4.0
+* Wed Nov 17 2022 Thomas Bourcey <sckyzo@gmail.com> - 1.0.0
 - Initial packaging

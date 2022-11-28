@@ -235,6 +235,22 @@ build_gpfs_exporter() {
   sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
 }
 
+build_smartctl_exporter() {
+  # eseries_exporter version
+  VERSION=$(check_last_release prometheus-community/smartctl_exporter)
+  sudo wget https://github.com/prometheus-community/smartctl_exporter/releases/download/v${VERSION}/smartctl_exporter-${VERSION}.linux-amd64.tar.gz -O /workspace/archives/smartctl_exporter-${VERSION}.tar.gz -c
+
+  sudo rpmbuild \
+    --clean \
+    --define "pkgversion ${VERSION}" \
+    --define "_topdir /tmp/rpm" \
+    --define "_sourcedir /workspace/archives" \
+    -ba /workspace/exporters/spec/smartctl_exporter.spec
+
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
+  sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
+}
+
 
 if [[ $(cat /etc/os-release | grep REDHAT_SUPPORT_PRODUCT_VERSION | awk -F'=' '{print $2}' | sed 's/"//g') -le 7 ]]; then sudo yum install wget jq epel-release -y;fi
 test -d /workspace/build/ || sudo mkdir -p /workspace/build/
@@ -285,6 +301,9 @@ case $1 in
   ;;
   gpfs_exporter )
   build_gpfs_exporter 
+  ;;
+  smartctl_exporter )
+  build_smartctl_exporter 
   ;;
   *)    # unknown option
   echo "Unknown option."

@@ -41,5 +41,5 @@ The exporter relies on tools from the FreeIPMI suite for the actual IPMI impleme
 %attr(-, root, root) /usr/local/bin/ipmi_exporter
 
 %changelog
-* Wed Nov 17 2022 Thomas Bourcey <sckyzo@gmail.com> - 1.4.0
+* Wed Nov 17 2022 Thomas Bourcey <sckyzo@gmail.com> - 1.0.0
 - Initial packaging
