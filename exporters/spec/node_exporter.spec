@@ -1,5 +1,5 @@
 %define debug_package %{nil}
-%global pkgname node-exporter
+%global pkgname node_exporter
 %{!?pkgrevision: %global pkgrevision 1}
 %if 0%{?rhel} == 8
  %define dist .el8
