@@ -12,7 +12,7 @@ Summary:       Prometheus exporter for hardware and OS metrics
 License:       Apache License 2.0
 URL:           https://github.com/prometheus/node_exporter
 
-Source0:       node_exporter-%{version}_armv7.tar.gz
+Source0:       node_exporter-%{version}_arm64.tar.gz
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Obsoletes:     node_exporter
@@ -22,7 +22,7 @@ Obsoletes:     node_exporter
 written in Go with pluggable metric collectors.
 
 %prep
-%setup -n node_exporter-%{version}.linux-armv7
+%setup -n node_exporter-%{version}.linux-arm64
 
 %build
 

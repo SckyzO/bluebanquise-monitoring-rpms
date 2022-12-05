@@ -28,8 +28,8 @@ alertmanager:
 node_exporter:
 	PKG=node_exporter docker-compose run --rm $(RPM_DIST)
 
-node_exporter_armv7:
-	PKG=node_exporter_armv7 docker-compose run --rm $(RPM_DIST)
+node_exporter_arm64:
+	PKG=node_exporter_arm64 docker-compose run --rm $(RPM_DIST)
 
 ping_exporter:
 	PKG=ping_exporter docker-compose run --rm $(RPM_DIST)
