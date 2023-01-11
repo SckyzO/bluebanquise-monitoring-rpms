@@ -17,7 +17,8 @@ all: prometheus \
 	lvm_exporter \
 	slurm_exporter \
 	eseries_exporter \
-	gpfs_exporter
+	gpfs_exporter \
+	smartctl_exporter
 
 prometheus:
 	PKG=prometheus docker-compose run --rm $(RPM_DIST)
