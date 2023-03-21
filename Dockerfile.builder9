@@ -4,9 +4,10 @@ FROM rockylinux:9
 ARG UID=1000
 ARG GID=1000
 
-RUN yum install -y make jq wget git sudo epel-release yum-utils rpm-build && \
-    yum install -y python2 python2-pip python2-rpm-macros python2-setuptools && \
-    yum clean all
+RUN dnf install -y make jq wget git sudo epel-release yum-utils rpm-build && \
+    dnf install -y python2 python2-pip python2-rpm-macros python2-setuptools && \
+    dnf install -y golang && \
+    dnf clean all
 
 RUN useradd builder -u $UID -m -G users,wheel && \
     echo "builder ALL=(ALL:ALL) NOPASSWD:ALL" >> /etc/sudoers && \

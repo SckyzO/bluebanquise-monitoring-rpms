@@ -2,7 +2,7 @@
 RPM_DIST?=rockylinux8
 #RPM_DIST?=rockylinux9
 SLURM_EXPORTER_VERSION = 0.20
-
+389DS_EXPORTER_VERSION = 0.1
 .PHONY: *
 
 all: prometheus \
@@ -18,7 +18,8 @@ all: prometheus \
 	slurm_exporter \
 	eseries_exporter \
 	gpfs_exporter \
-	smartctl_exporter
+	smartctl_exporter \
+	389ds_exporter
 
 prometheus:
 	PKG=prometheus docker-compose run --rm $(RPM_DIST)
@@ -76,8 +77,6 @@ slurm_exporter:
 	rm -Rf slurm-docker-cluster
 	PKG=slurm_exporter docker-compose run --rm $(RPM_DIST)
 
-
-
 eseries_exporter:
 	PKG=eseries_exporter docker-compose run --rm $(RPM_DIST)
 
@@ -86,6 +85,9 @@ gpfs_exporter:
 
 smartctl_exporter:
 	PKG=smartctl_exporter docker-compose run --rm $(RPM_DIST)
+
+389ds_exporter:
+	PKG=389ds_exporter docker-compose run --rm $(RPM_DIST)
 
 clean:
 	rm -f \

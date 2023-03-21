@@ -251,6 +251,28 @@ build_smartctl_exporter() {
   sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
 }
 
+build_389ds_exporter() {
+  # 389ds_exporter
+  VERSION="0.1"
+  
+  [ -d /workspace/archives/389DS-exporter ] && sudo rm -Rf /workspace/archives/389DS-exporter
+  cd /workspace/archives
+  git clone https://github.com/ozgurcd/389DS-exporter
+  cd /workspace/archives/389DS-exporter
+  go build -o 389ds_exporter-${VERSION}.linux-amd64/389ds_exporter
+  tar czf 389ds_exporter-${VERSION}.tar.gz 389ds_exporter-${VERSION}.linux-amd64/
+  cp /workspace/archives/389DS-exporter/389ds_exporter-${VERSION}.tar.gz /workspace/archives/
+
+  sudo rpmbuild \
+    --clean \
+    --define "pkgversion ${VERSION}" \
+    --define "_topdir /tmp/rpm" \
+    --define "_sourcedir /workspace/archives" \
+    -ba /workspace/exporters/spec/389ds_exporter.spec
+
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
+  sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
+}
 
 if [[ $(cat /etc/os-release | grep REDHAT_SUPPORT_PRODUCT_VERSION | awk -F'=' '{print $2}' | sed 's/"//g') -le 7 ]]; then sudo yum install wget jq epel-release -y;fi
 test -d /workspace/build/ || sudo mkdir -p /workspace/build/
@@ -304,6 +326,9 @@ case $1 in
   ;;
   smartctl_exporter )
   build_smartctl_exporter 
+  ;;
+  389ds_exporter )
+  build_389ds_exporter 
   ;;
   *)    # unknown option
   echo "Unknown option."
