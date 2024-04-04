@@ -19,7 +19,12 @@ all: prometheus \
 	eseries_exporter \
 	gpfs_exporter \
 	smartctl_exporter \
-	389ds_exporter
+	389ds_exporter \
+	infiniband_exporter \
+	podman_exporter \
+	apache_exporter \
+	nvidia-dcgm_exporter \
+	lustre_exporter
 
 prometheus:
 	PKG=prometheus docker-compose run --rm $(RPM_DIST)
@@ -56,9 +61,10 @@ lvm_exporter:
 
 slurm_exporter:
 	rm -Rf slurm-docker-cluster
-	git clone https://github.com/giovtorres/slurm-docker-cluster
+	git clone https://github.com/giovtorres/slurm-docker-cluster;
 	cd slurm-docker-cluster; \
-	docker compose build; \
+	sed -i 's/FROM rockylinux:8/FROM rockylinux:9/g' Dockerfile; \
+	docker compose build --build-arg SLURM_TAG=\"slurm-23-11-5\"; \
 	docker compose up -d; \
 	docker exec -t slurmctld bash -c "dnf install go -y; \
 							cd /tmp; \
@@ -70,12 +76,12 @@ slurm_exporter:
 	mkdir -p "slurm_exporter-$(SLURM_EXPORTER_VERSION).linux-amd64"
 	mv prometheus-slurm-exporter slurm_exporter-$(SLURM_EXPORTER_VERSION).linux-amd64/
 	tar -czf slurm_exporter-$(SLURM_EXPORTER_VERSION).tar.gz slurm_exporter-$(SLURM_EXPORTER_VERSION).linux-amd64
-	sudo mv ./slurm_exporter-$(SLURM_EXPORTER_VERSION).tar.gz archives/slurm_exporter-$(SLURM_EXPORTER_VERSION).tar.gz
+	mv ./slurm_exporter-$(SLURM_EXPORTER_VERSION).tar.gz archives/slurm_exporter-$(SLURM_EXPORTER_VERSION).tar.gz
 	rm -Rf slurm_exporter-$(SLURM_EXPORTER_VERSION).linux-amd64
 	cd slurm-docker-cluster; \
 	docker compose down
 	rm -Rf slurm-docker-cluster
-	PKG=slurm_exporter docker-compose run --rm $(RPM_DIST)
+	RPM_DIST=rockylinux9 PKG=slurm_exporter docker-compose run --rm $(RPM_DIST)
 
 eseries_exporter:
 	PKG=eseries_exporter docker-compose run --rm $(RPM_DIST)
@@ -88,6 +94,21 @@ smartctl_exporter:
 
 389ds_exporter:
 	PKG=389ds_exporter docker-compose run --rm $(RPM_DIST)
+
+infiniband_exporter:
+	PKG=infiniband_exporter docker-compose run --rm $(RPM_DIST)
+
+podman_exporter:
+	PKG=podman_exporter docker-compose run --rm $(RPM_DIST)
+
+apache_exporter:
+	PKG=apache_exporter docker-compose run --rm $(RPM_DIST)
+
+nvidia-dcgm_exporter:
+	PKG=nvidia-dcgm_exporter docker-compose run --rm $(RPM_DIST)
+
+lustre_exporter:
+	PKG=lustre_exporter docker-compose run --rm $(RPM_DIST)
 
 clean:
 	rm -f \

@@ -5,7 +5,7 @@ ARG UID=1000
 ARG GID=1000
 
 RUN yum install -y make jq wget git sudo epel-release yum-utils rpm-build && \
-    yum install -y python2 python2-pip python2-rpm-macros python2-setuptools && \
+    yum install -y python2 python2-pip python2-rpm-macros python2-setuptools bc && \
     yum install -y golang && \
     yum clean all
 

@@ -1,5 +1,8 @@
 #!/bin/bash -eux
 
+sudo yum install -y epel-release bc
+
+
 check_last_release() {
   # Check last github release
   curl --silent "https://api.github.com/repos/$1/releases/latest" | jq -r .tag_name | sed 's/^v//g'
@@ -274,7 +277,108 @@ build_389ds_exporter() {
   sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
 }
 
-if [[ $(cat /etc/os-release | grep REDHAT_SUPPORT_PRODUCT_VERSION | awk -F'=' '{print $2}' | sed 's/"//g') -le 7 ]]; then sudo yum install wget jq epel-release -y;fi
+build_infiniband_exporter() {
+  # infiniband version
+  VERSION=$(check_last_release treydock/infiniband_exporter)
+  sudo wget https://github.com/treydock/infiniband_exporter/releases/download/v${VERSION}/infiniband_exporter-${VERSION}.linux-amd64.tar.gz -O /workspace/archives/infiniband_exporter-${VERSION}.tar.gz -c
+
+  sudo rpmbuild \
+    --clean \
+    --define "pkgversion ${VERSION}" \
+    --define "_topdir /tmp/rpm" \
+    --define "_sourcedir /workspace/archives" \
+    -ba /workspace/exporters/spec/infiniband_exporter.spec
+
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
+  sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
+}
+
+build_apache_exporter() {
+  # apache version
+  VERSION=$(check_last_release Lusitaniae/apache_exporter)
+  sudo wget https://github.com/Lusitaniae/apache_exporter/releases/download/v${VERSION}/apache_exporter-${VERSION}.linux-amd64.tar.gz -O /workspace/archives/apache_exporter-${VERSION}.tar.gz -c
+
+  sudo rpmbuild \
+    --clean \
+    --define "pkgversion ${VERSION}" \
+    --define "_topdir /tmp/rpm" \
+    --define "_sourcedir /workspace/archives" \
+    -ba /workspace/exporters/spec/apache_exporter.spec
+
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
+  sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
+}
+
+build_podman_exporter() {
+  # podman version
+  VERSION=$(check_last_release containers/prometheus-podman-exporter)
+  
+  [ -d /workspace/archives/podman_exporter ] && sudo rm -Rf /workspace/archives/podman_exporter
+  cd /workspace/archives
+  git clone https://github.com/containers/prometheus-podman-exporter podman_exporter
+  cd /workspace/archives/podman_exporter
+  sudo dnf install 'dnf-command(config-manager)' -y
+  sudo dnf config-manager --set-enabled crb
+  sudo dnf install device-mapper-devel gpgme-devel libassuan-devel -y
+  curl -s https://cbs.centos.org/kojifiles/packages/btrfs-progs/6.8/1.el9/x86_64/ | grep -oP 'href="\K[^"]*.rpm' | while read rpm; do wget "https://cbs.centos.org/kojifiles/packages/btrfs-progs/6.8/1.el9/x86_64/$rpm" -P /tmp; done
+  sudo dnf install /tmp/*.rpm -y
+  make binary
+  cd bin/
+  mkdir podman_exporter-${VERSION}.linux-amd64/
+  mv prometheus-podman-exporter podman_exporter-${VERSION}.linux-amd64/podman_exporter
+  tar czf podman_exporter-${VERSION}.tar.gz podman_exporter-${VERSION}.linux-amd64/
+  cp /workspace/archives/podman_exporter/bin/podman_exporter-${VERSION}.tar.gz /workspace/archives/
+
+  sudo rpmbuild \
+    --clean \
+    --define "pkgversion ${VERSION}" \
+    --define "_topdir /tmp/rpm" \
+    --define "_sourcedir /workspace/archives" \
+    -ba /workspace/exporters/spec/podman_exporter.spec
+
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
+  sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
+}
+
+build_nvidia-dcgm_exporter() {
+  # nvidia-dcgm version
+  VERSION=$(check_last_release NVIDIA/dcgm-exporter | awk -F'-' '{print $2}')  
+  
+  [ -d /workspace/archives/dcgm-exporter ] && sudo rm -Rf /workspace/archives/dcgm-exporter
+  cd /workspace/archives
+  sudo dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel9/x86_64/cuda-rhel9.repo
+  sudo dnf install -y datacenter-gpu-manager docker 
+  wget https://go.dev/dl/go1.21.6.linux-amd64.tar.gz -O /tmp/go1.21.6.linux-amd64.tar.gz
+  cd /tmp
+  tar xf go1.21.6.linux-amd64.tar.gz
+  export GOROOT=/tmp/go/
+  export GOPATH=$HOME/go
+  export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
+  git clone https://github.com/NVIDIA/dcgm-exporter /workspace/archives/dcgm-exporter
+  cd /workspace/archives/dcgm-exporter
+  PATH=$GOPATH/bin:$GOROOT/bin:$PATH make binary
+  cd cmd/dcgm-exporter
+  mkdir nvidia-dcgm_exporter-${VERSION}.linux-amd64/
+  mv dcgm-exporter nvidia-dcgm_exporter-${VERSION}.linux-amd64/nvidia-dcgm_exporter
+  tar czf nvidia-dcgm_exporter-${VERSION}.tar.gz nvidia-dcgm_exporter-${VERSION}.linux-amd64/
+  cp /workspace/archives/dcgm-exporter/cmd/dcgm-exporter/nvidia-dcgm_exporter-${VERSION}.tar.gz /workspace/archives/
+
+
+  sudo rpmbuild \
+    --clean \
+    --define "pkgversion ${VERSION}" \
+    --define "_topdir /tmp/rpm" \
+    --define "_sourcedir /workspace/archives" \
+    -ba /workspace/exporters/spec/nvidia-dcgm_exporter.spec
+
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
+  sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
+}
+
+
+
+command -v dnf 2>&1  && echo dnf install bc -y || echo sudo yum install -y bc epel-release 
+if [[ $(echo "$(cat /etc/os-release | grep REDHAT_SUPPORT_PRODUCT_VERSION | awk -F'=' '{print $2}' | sed 's/"//g') <= 7" | bc -l) ]]; then sudo yum install wget jq epel-release -y;fi
 test -d /workspace/build/ || sudo mkdir -p /workspace/build/
 test -d /workspace/build/rpms || sudo mkdir -p /workspace/build/rpms
 test -d /workspace/build/sources || sudo mkdir -p /workspace/build/sources
@@ -329,6 +433,21 @@ case $1 in
   ;;
   389ds_exporter )
   build_389ds_exporter 
+  ;;
+  infiniband_exporter )
+  build_infiniband_exporter
+  ;;
+  podman_exporter )
+  build_podman_exporter
+  ;;
+  nvidia-dcgm_exporter )
+  build_nvidia-dcgm_exporter
+  ;;
+  lustre_exporter )
+  build_lustre_exporter
+  ;;
+  apache_exporter )
+  build_apache_exporter
   ;;
   *)    # unknown option
   echo "Unknown option."

@@ -5,7 +5,7 @@ ARG UID=1000
 ARG GID=1000
 
 RUN dnf install -y make jq wget git sudo epel-release yum-utils rpm-build && \
-    dnf install -y python2 python2-pip python2-rpm-macros python2-setuptools && \
+    dnf install -y python3 python3-pip python3-rpm-macros python3-setuptools && \
     dnf install -y golang && \
     dnf clean all
 
