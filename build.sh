@@ -376,6 +376,40 @@ build_nvidia-dcgm_exporter() {
 }
 
 
+build_grok_exporter() {
+  # grok version
+  VERSION=$(check_last_release sysdiglabs/grok_exporter)
+
+
+  cd /tmp  
+  curl -sLO https://github.com/kkos/oniguruma/releases/download/v6.9.5_rev1/onig-6.9.5-rev1.tar.gz 
+  tar xfz onig-6.9.5-rev1.tar.gz 
+  rm onig-6.9.5-rev1.tar.gz 
+  cd /tmp/onig-6.9.5 
+  ./configure 
+  make 
+  sudo make install 
+  cd /tmp
+  git clone https://github.com/fstab/grok_exporter
+  cd grok_exporter
+  git submodule update --init --recursive
+  go install . 
+  sudo mkdir -p /workspace/archives/grok_exporter-${VERSION}.linux-amd64
+  sudo mv /home/builder/go/bin/grok_exporter /workspace/archives/grok_exporter-${VERSION}.linux-amd64/
+  cd /workspace/archives
+  sudo tar czf grok_exporter-${VERSION}.tar.gz grok_exporter-${VERSION}.linux-amd64
+  sudo rm -Rf /workspace/archives/grok_exporter-${VERSION}.linux-amd64
+
+  sudo rpmbuild \
+    --clean \
+    --define "pkgversion ${VERSION}" \
+    --define "_topdir /tmp/rpm" \
+    --define "_sourcedir /workspace/archives" \
+    -ba /workspace/exporters/spec/grok_exporter.spec
+
+  sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
+  sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
+}
 
 #command -v dnf 2>&1 && dnf install bc epel-release -y || sudo yum install -y bc epel-release 
 #if [[ $(echo "$(cat /etc/os-release | grep REDHAT_SUPPORT_PRODUCT_VERSION | awk -F'=' '{print $2}' | sed 's/"//g') <= 7" | bc -l) ]]; then sudo yum install wget jq epel-release -y;fii
@@ -459,6 +493,9 @@ case $1 in
   ;;
   apache_exporter )
   build_apache_exporter
+  ;;
+  grok_exporter )
+  build_grok_exporter
   ;;
   *)    # unknown option
   echo "Unknown option."
