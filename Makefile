@@ -24,7 +24,8 @@ all: prometheus \
 	podman_exporter \
 	apache_exporter \
 	nvidia-dcgm_exporter \
-	lustre_exporter
+	lustre_exporter \
+	grok_exporter
 
 prometheus:
 	PKG=prometheus docker-compose run --rm $(RPM_DIST)
@@ -109,6 +110,9 @@ nvidia-dcgm_exporter:
 
 lustre_exporter:
 	PKG=lustre_exporter docker-compose run --rm $(RPM_DIST)
+
+grok_exporter:
+	PKG=grok_exporter docker-compose run --rm $(RPM_DIST)
 
 clean:
 	rm -f \
