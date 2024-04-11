@@ -66,8 +66,8 @@ lvm_exporter:
 	PKG=lvm_exporter docker-compose run --rm $(RPM_DIST)
 
 slurm_exporter:
-#	rm -Rf slurm-docker-cluster; 
-#	git clone https://github.com/giovtorres/slurm-docker-cluster;  
+	rm -Rf slurm-docker-cluster; 
+	git clone https://github.com/giovtorres/slurm-docker-cluster;  
 	cd slurm-docker-cluster; \
 	docker compose down; \
 	sed -i 's/FROM $(DOCKER_OS_RELEASE)/FROM $(DOCKER_OS_RELEASE)/g' Dockerfile; \
