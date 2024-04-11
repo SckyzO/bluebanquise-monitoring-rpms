@@ -1,6 +1,6 @@
 #!/bin/bash -eux
 
-sudo yum install -y epel-release bc
+#sudo yum install -y epel-release bc
 
 
 check_last_release() {
@@ -18,7 +18,7 @@ build_prometheus() {
   	--define "pkgversion ${VERSION}" \
   	--define "_topdir /tmp/rpm" \
   	--define "_sourcedir /workspace/archives" \
-  	-ba /workspace/prometheus/spec/prometheus.spec
+  	-ba /workspace/exporters/spec/prometheus.spec
 
   sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
   sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
@@ -34,7 +34,7 @@ build_alertmanager() {
   	--define "pkgversion ${VERSION}" \
   	--define "_topdir /tmp/rpm" \
   	--define "_sourcedir /workspace/archives" \
-	-ba /workspace/alertmanager/spec/alertmanager.spec
+	-ba /workspace/exporters/spec/alertmanager.spec
 
   sudo install -g builder -o builder /tmp/rpm/RPMS/*/*.rpm /workspace/build/rpms/
   sudo install -g builder -o builder /tmp/rpm/SRPMS/*.src.rpm /workspace/build/sources/
@@ -318,9 +318,9 @@ build_podman_exporter() {
   git clone https://github.com/containers/prometheus-podman-exporter podman_exporter
   cd /workspace/archives/podman_exporter
   sudo dnf install 'dnf-command(config-manager)' -y
-  sudo dnf config-manager --set-enabled crb
+  sudo dnf config-manager --set-enabled $additionnal_repo
   sudo dnf install device-mapper-devel gpgme-devel libassuan-devel -y
-  curl -s https://cbs.centos.org/kojifiles/packages/btrfs-progs/6.8/1.el9/x86_64/ | grep -oP 'href="\K[^"]*.rpm' | while read rpm; do wget "https://cbs.centos.org/kojifiles/packages/btrfs-progs/6.8/1.el9/x86_64/$rpm" -P /tmp; done
+  curl -s $REPO_BTRFS | grep -oP 'href="\K[^"]*.rpm' | while read RPM; do wget "${REPO_BTRFS}${RPM}" -P /tmp; done
   sudo dnf install /tmp/*.rpm -y
   make binary
   cd bin/
@@ -377,8 +377,19 @@ build_nvidia-dcgm_exporter() {
 
 
 
-command -v dnf 2>&1  && echo dnf install bc -y || echo sudo yum install -y bc epel-release 
-if [[ $(echo "$(cat /etc/os-release | grep REDHAT_SUPPORT_PRODUCT_VERSION | awk -F'=' '{print $2}' | sed 's/"//g') <= 7" | bc -l) ]]; then sudo yum install wget jq epel-release -y;fi
+#command -v dnf 2>&1 && dnf install bc epel-release -y || sudo yum install -y bc epel-release 
+#if [[ $(echo "$(cat /etc/os-release | grep REDHAT_SUPPORT_PRODUCT_VERSION | awk -F'=' '{print $2}' | sed 's/"//g') <= 7" | bc -l) ]]; then sudo yum install wget jq epel-release -y;fii
+OS_RELEASE=$(awk -F= '/REDHAT_SUPPORT_PRODUCT_VERSION/ { gsub(/"/, "", $2); print int($2); }' /etc/os-release)
+#if [[ $(echo "$(cat /etc/os-release | grep REDHAT_SUPPORT_PRODUCT_VERSION | awk -F'=' '{print $2}' | sed 's/"//g' | cut -d '.' -f1 ) > 8" | bc -l) ]]; 
+if (( OS_RELEASE > 8))
+then 
+    additionnal_repo=crb
+    REPO_BTRFS="https://cbs.centos.org/kojifiles/packages/btrfs-progs/6.8/1.el9/x86_64/"
+else 
+    additionnal_repo=powertools
+    REPO_BTRFS="https://cbs.centos.org/kojifiles/packages/btrfs-progs/6.6.3/2.el8/x86_64/"
+fi
+
 test -d /workspace/build/ || sudo mkdir -p /workspace/build/
 test -d /workspace/build/rpms || sudo mkdir -p /workspace/build/rpms
 test -d /workspace/build/sources || sudo mkdir -p /workspace/build/sources

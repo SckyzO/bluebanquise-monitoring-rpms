@@ -3,6 +3,11 @@ RPM_DIST?=rockylinux8
 #RPM_DIST?=rockylinux9
 SLURM_EXPORTER_VERSION = 0.20
 389DS_EXPORTER_VERSION = 0.1
+SLURM_TAG = slurm-23-11-1-1
+SLURM_IMAGE_TAG = 23.11.1
+DIST_NAME := $(word 1,$(subst _, ,$(RPM_DIST)))
+DIST_VERSION := $(word 2,$(subst _, ,$(RPM_DIST)))
+DOCKER_OS_RELEASE := $(DIST_NAME):$(DIST_VERSION)
 .PHONY: *
 
 all: prometheus \
@@ -60,18 +65,19 @@ lvm_exporter:
 	PKG=lvm_exporter docker-compose run --rm $(RPM_DIST)
 
 slurm_exporter:
-	rm -Rf slurm-docker-cluster
-	git clone https://github.com/giovtorres/slurm-docker-cluster;
+#	rm -Rf slurm-docker-cluster; 
+#	git clone https://github.com/giovtorres/slurm-docker-cluster;  
 	cd slurm-docker-cluster; \
-	sed -i 's/FROM rockylinux:8/FROM rockylinux:9/g' Dockerfile; \
-	docker compose build --build-arg SLURM_TAG=\"slurm-23-11-5\"; \
-	docker compose up -d; \
+	docker compose down; \
+	sed -i 's/FROM $(DOCKER_OS_RELEASE)/FROM $(DOCKER_OS_RELEASE)/g' Dockerfile; \
+	SLURM_TAG="$(SLURM_TAG)" IMAGE_TAG="$(SLURM_IMAGE_TAG)" docker compose build --no-cache; \
+	IMAGE_TAG=$(SLURM_IMAGE_TAG) docker compose up -d; \
 	docker exec -t slurmctld bash -c "dnf install go -y; \
-							cd /tmp; \
-							git clone https://github.com/vpenso/prometheus-slurm-exporter.git; \
-							cd prometheus-slurm-exporter; \
-							git checkout development; \
-							make;" 
+		cd /tmp; \
+		git clone https://github.com/vpenso/prometheus-slurm-exporter.git; \
+		cd prometheus-slurm-exporter; \
+		git checkout development; \
+		make;" 
 	docker cp "slurmctld:/tmp/prometheus-slurm-exporter/bin/prometheus-slurm-exporter" "."
 	mkdir -p "slurm_exporter-$(SLURM_EXPORTER_VERSION).linux-amd64"
 	mv prometheus-slurm-exporter slurm_exporter-$(SLURM_EXPORTER_VERSION).linux-amd64/
@@ -81,7 +87,7 @@ slurm_exporter:
 	cd slurm-docker-cluster; \
 	docker compose down
 	rm -Rf slurm-docker-cluster
-	RPM_DIST=rockylinux9 PKG=slurm_exporter docker-compose run --rm $(RPM_DIST)
+	RPM_DIST=$(RPM_DIST) PKG=slurm_exporter docker-compose run --rm $(RPM_DIST)
 
 eseries_exporter:
 	PKG=eseries_exporter docker-compose run --rm $(RPM_DIST)
@@ -111,7 +117,7 @@ lustre_exporter:
 	PKG=lustre_exporter docker-compose run --rm $(RPM_DIST)
 
 clean:
-	rm -f \
+	rm -Rf \
 	build/rpms/* \
 	build/sources/* \
 	archives/*
