@@ -15,7 +15,7 @@ services:
       context: .
       dockerfile: Dockerfile.builder8
       args:
-        UID: 1000
+        UID: ${UID}
     image: rpmbuild/prometheus-builder:rockylinux8
     environment:
     - VERSION
@@ -28,6 +28,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.builder9
+      args:
+        UID: ${UID}
     image: rpmbuild/prometheus-builder:rockylinux9
     environment:
     - VERSION
