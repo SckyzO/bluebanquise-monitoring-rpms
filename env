@@ -1,0 +1,2 @@
+UID=echo "$(id -u)"
+GID=echo "$(id -g)"
