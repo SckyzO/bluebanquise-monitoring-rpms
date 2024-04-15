@@ -15,7 +15,7 @@ Summary:       Prometheus exporter for LVM metrics.
 License:       Apache License 2.0
 URL:           https://github.com/hansmi/prometheus-lvm-exporter
 
-Source0:       lvm_exporter-%{version}_linux_amd64.tar.gz
+Source0:       lvm_exporter-%{version}.linux-amd64.tar.gz
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Obsoletes:     lvm_exporter
@@ -40,7 +40,7 @@ are reported, either as a standalone metric for numeric values or as a label on 
 %attr(-, root, root) /usr/local/bin/lvm_exporter
 
 %changelog
-* Tue Apr 25 2024 Thomas Bourcey <thomas.bourcey@eviden.com> - 1.0.1
+* Mon Apr 15 2024 Thomas Bourcey <thomas.bourcey@eviden.com> - 1.0.1
 - Complete overhaul of the spec file and added support for RHEL 9 builds.
 
 * Wed Nov 17 2022 Thomas Bourcey <thomas.bourcey@eviden.com> - 1.0.0

@@ -10,21 +10,36 @@ test -d /workspace/archives/ || sudo mkdir -p /workspace/archives/
 check_last_release() {
   local tag=$(curl --silent "https://api.github.com/repos/$1/releases/latest" | jq -r .tag_name | sed 's/^v//')
   if [[ -z "$tag" || "$tag" == "null" ]]; then
-    echo "1.0"  # Retourne 1.0 si le tag est vide ou null
+    echo "1.0"  # Return 1.0 if the tag is empty or null
   else
     echo "$tag"
   fi
 }
 
-# Download the tarball for the given exporter from GitHub
+# Download the tarball for the given exporter from GitHub and rename it based on type
 download_and_prepare() {
   local repo=$1
   local exporter=$2
   local type=$3
   local version=$(check_last_release "$repo")
-  local url="https://github.com/$repo/releases/download/v${version}/${exporter}-${version}.${type}"
-  local out="/workspace/archives/${exporter}-${version}.${type}"
-  wget "$url" -O "$out" -c
+  local api_url="https://api.github.com/repos/${repo}/releases/latest"
+
+  # Retrieve the latest release information
+  local release_info=$(curl -s "$api_url")
+
+  # Extract the URLs of the assets that match the type and download them
+  echo "$release_info" | jq -r --arg type "$type" '.assets[] | select(.name | endswith($type)) | .browser_download_url' | while read url; do
+    local filename=$(basename "$url")
+    local out="/workspace/archives/${filename}"
+    wget "$url" -O "$out" -c
+
+    # Construct the new standardized file name
+    local new_filename="${exporter}-${version}.linux-amd64.tar.gz"
+
+    # Rename the downloaded file
+    mv "/workspace/archives/${filename}" "/workspace/archives/${new_filename}"
+    echo "Renamed $filename to $new_filename"
+  done
 }
 
 # Function to handle custom build scripts if they exist
@@ -46,7 +61,7 @@ build_exporter() {
   local exporter=$2
   local type=$3
   local spec_dir=$4
-  
+
   # Check and run any custom build script first
   if custom_build_and_prepare "$exporter"; then
     echo "Custom build completed, skipping standard preparation."
@@ -54,7 +69,7 @@ build_exporter() {
     # Proceed with standard download and preparation if no custom script was executed
     download_and_prepare "$repo" "$exporter" "$type"
   fi
-  
+
   # Finally, build the RPM
   local version=$(check_last_release "$repo")
   build_rpm "$exporter" "$version" "$spec_dir"
@@ -66,7 +81,7 @@ build_rpm() {
   local version=$2
   local spec_dir=$3
   local spec_file="/workspace/exporter/${exporter}/${exporter}.spec"
-  
+
   sudo rpmbuild --clean \
                 --define "pkgversion ${version}" \
                 --define "_topdir /tmp/rpm" \
@@ -123,7 +138,7 @@ build_lustre_exporter() {
 }
 
 build_lvm_exporter() { 
-  build_exporter "hansmi/prometheus-lvm-exporter" "lvm_exporter" "linux-amd64.tar.gz" "/workspace/exporter" 
+  build_exporter "hansmi/prometheus-lvm-exporter" "lvm_exporter" "linux_amd64.tar.gz" "/workspace/exporter" 
 }
 
 build_nvidia-dcgm_exporter() { 
