@@ -45,7 +45,9 @@ sudo dnf install device-mapper-devel gpgme-devel libassuan-devel -y
 
 # Download necessary RPMs from the repository and install them
 echo "Downloading and installing RPMs from repository."
-curl -s $REPO_BTRFS | grep -oP 'href="\K[^"]*.rpm' | xargs -I{} wget "{}" -P /tmp
+curl -s $REPO_BTRFS | grep -oP 'href="\K[^"]*.rpm' | while read rpm; do
+    wget "${REPO_BTRFS}${rpm}" -P /tmp
+done
 sudo dnf install /tmp/*.rpm -y
 
 # Build the binary
@@ -60,9 +62,9 @@ mv "${BIN_DIR}/prometheus-podman-exporter" "${BIN_DIR}/podman_exporter-${VERSION
 # Package the binary into a tarball
 echo "Packaging the binary into a tarball."
 cd "${BIN_DIR}"
-tar czf "podman_exporter-${VERSION}.tar.gz" "podman_exporter-${VERSION}.linux-amd64/"
+tar czf "podman_exporter-${VERSION}.linux-amd64.tar.gz" "podman_exporter-${VERSION}.linux-amd64/"
 
 # Move the tarball to the archives directory
-cp "podman_exporter-${VERSION}.tar.gz" "${ARCHIVE_DIR}/"
+cp "podman_exporter-${VERSION}.linux-amd64.tar.gz" "${ARCHIVE_DIR}/"
 
 echo "Podman Exporter build and packaging complete."

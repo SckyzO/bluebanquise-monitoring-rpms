@@ -15,7 +15,7 @@ Summary:       Prometheus exporter for ICMP echo
 License:       Apache License 2.0
 URL:           https://github.com/czerwonk/ping_exporter
 
-Source0:       ping_exporter-%{version}.Linux-x86_64.tar.gz
+Source0:       ping_exporter-%{version}.linux-amd64.tar.gz
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Obsoletes:     ping_exporter

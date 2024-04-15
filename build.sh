@@ -8,11 +8,14 @@ test -d /workspace/archives/ || sudo mkdir -p /workspace/archives/
 
 # Utility function to check for the latest GitHub release
 check_last_release() {
-  local tag=$(curl --silent "https://api.github.com/repos/$1/releases/latest" | jq -r .tag_name | sed 's/^v//')
-  if [[ -z "$tag" || "$tag" == "null" ]]; then
+  local tag=$(curl --silent "https://api.github.com/repos/$1/releases/latest" | jq -r .tag_name)
+  # Strip out the initial 'v' and handle versions like v1.0-2
+  local clean_tag="${tag#v}"
+  if [[ -z "$clean_tag" || "$clean_tag" == "null" ]]; then
     echo "1.0"  # Return 1.0 if the tag is empty or null
   else
-    echo "$tag"
+    # Use awk to extract potentially more specific parts of the tag, if needed
+    echo "$clean_tag" | awk -F'-' '{print $1}'
   fi
 }
 

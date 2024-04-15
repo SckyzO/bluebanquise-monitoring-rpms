@@ -11,7 +11,7 @@ check_last_release() {
 }
 
 # Fetch version information
-VERSION=$(check_last_release NVIDIA/dcgm-exporter | awk -F'-' '{print $2}')
+VERSION=$(check_last_release NVIDIA/dcgm-exporter | awk -F'-' '{print $1}')
 
 # Define the archive directory and the exporter directory
 ARCHIVE_DIR="/workspace/archives"
@@ -27,8 +27,18 @@ fi
 echo "Cloning DCGM Exporter repository."
 git clone https://github.com/NVIDIA/dcgm-exporter "${EXPORTER_DIR}"
 
-# Add NVIDIA CUDA repository
-sudo dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel9/x86_64/cuda-rhel9.repo
+# Detect OS version and set appropriate NVIDIA CUDA repository
+OS_VERSION=$(grep -oP '(?<=VERSION_ID=")\d+' /etc/os-release)
+if [[ "$OS_VERSION" == "8" ]]; then
+    CUDA_REPO="https://developer.download.nvidia.com/compute/cuda/repos/rhel8/x86_64/cuda-rhel8.repo"
+elif [[ "$OS_VERSION" == "9" ]]; then
+    CUDA_REPO="https://developer.download.nvidia.com/compute/cuda/repos/rhel9/x86_64/cuda-rhel9.repo"
+else
+    echo "Unsupported OS version: $OS_VERSION"
+    exit 1
+fi
+
+sudo dnf config-manager --add-repo $CUDA_REPO
 
 # Install necessary packages
 sudo dnf install -y datacenter-gpu-manager docker
@@ -55,9 +65,10 @@ mv "${BIN_DIR}/dcgm-exporter" "${BIN_DIR}/nvidia-dcgm_exporter-${VERSION}.linux-
 # Create a tarball for distribution
 echo "Packaging the exporter binary."
 cd "${BIN_DIR}"
-tar czf "nvidia-dcgm_exporter-${VERSION}.tar.gz" "nvidia-dcgm_exporter-${VERSION}.linux-amd64/"
+tar czf "nvidia-dcgm_exporter-${VERSION}.linux-amd64.tar.gz" "nvidia-dcgm_exporter-${VERSION}.linux-amd64/"
 
 # Move the tarball to the archives directory
-cp "nvidia-dcgm_exporter-${VERSION}.tar.gz" "${ARCHIVE_DIR}/"
+cp "nvidia-dcgm_exporter-${VERSION}.linux-amd64.tar.gz" "${ARCHIVE_DIR}/"
 
 echo "NVIDIA DCGM Exporter build and packaging complete."
+
