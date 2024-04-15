@@ -26,7 +26,7 @@ mv "ha_cluster_exporter-${VERSION}" "ha_cluster_exporter-${VERSION}.linux-amd64/
 
 # Create a tarball for the RPM build
 echo "Creating tarball..."
-tar czf "ha_cluster_exporter-${VERSION}.tar.gz" "ha_cluster_exporter-${VERSION}.linux-amd64/"
+tar czf "ha_cluster_exporter-${VERSION}.linux-amd64.tar.gz" "ha_cluster_exporter-${VERSION}.linux-amd64/"
 rm -Rf "ha_cluster_exporter-${VERSION}.linux-amd64/"
 
 echo "Preparation complete."

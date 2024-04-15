@@ -10,43 +10,32 @@ DIST_NAME := $(word 1,$(subst _, ,$(RPM_DIST)))
 DIST_VERSION := $(word 2,$(subst _, ,$(RPM_DIST)))
 DOCKER_OS_RELEASE := $(DIST_NAME):$(DIST_VERSION)
 DOCKER_COMPOSE_RUN := docker-compose run --rm $(RPM_DIST)
-.PHONY: all clean help
+.PHONY: all clean help debug list
 
-# Error log file
-ERROR_LOG = logs/build.log
+# General debug log file
+DEBUG_LOG = logs/build_debug.log
 
-# Targets for exporters, excluding slurm_exporter, in alphabetical order
-EXPORTERS = \
-	389ds_exporter \
-	alertmanager \
-	apache_exporter \
-	bind_exporter \
-	eseries_exporter \
-	gpfs_exporter \
-	grok_exporter \
-	ha_cluster_exporter \
-	infiniband_exporter \
-	ipmi_exporter \
-	lustre_exporter \
-	lvm_exporter \
-	nvidia-dcgm_exporter \
-	node_exporter \
-	ping_exporter \
-	podman_exporter \
-	process_exporter \
-	prometheus \
-	smartctl_exporter \
-	snmp_exporter
+# Ensure the logs directory exists
+$(shell mkdir -p logs)
+
+# Function to determine logging behavior
+define log_command
+    if [ "$(DEBUG)" = "1" ]; then \
+        PKG=$1 $(DOCKER_COMPOSE_RUN) 2>&1 | tee -a $(DEBUG_LOG); \
+    else \
+        PKG=$1 $(DOCKER_COMPOSE_RUN); \
+    fi
+endef
+
+# Dynamically find exporters with a .spec file in their directory
+EXPORTERS := $(shell find exporter/* -type f -name '*.spec' -exec dirname {} \; | sed 's|exporter/||')
 
 # 'all' now depends on 'clean'
 all: clean $(EXPORTERS) slurm_exporter
 
 $(EXPORTERS):
-	-PKG=$@ $(DOCKER_COMPOSE_RUN) >$(ERROR_LOG) || echo "Error building $@, see $(ERROR_LOG)"
-
-# Special cases
-slurm_exporter:
-	-./exporter/slurm_exporter/build_slurm_exporter.sh $(SLURM_TAG) $(SLURM_IMAGE_TAG) $(SLURM_EXPORTER_VERSION) $(DOCKER_OS_RELEASE) 2>>$(ERROR_LOG) || echo "Error building slurm_exporter, see $(ERROR_LOG)"
+	@echo "Building $@..."
+	@$(call log_command,$@)
 
 clean:
 	@echo "Cleaning build artifacts..."
@@ -57,7 +46,14 @@ help:
 	@echo "Available commands:"
 	@echo "  make all          - Build all exporters and clean up previous builds"
 	@echo "  make clean        - Remove build artifacts and clean workspace"
+	@echo "  make debug        - Run in debug mode for detailed logging"
+	@echo "  make list         - List all available exporters"
 	@echo "  help              - Display this help message"
 	@echo ""
 	@echo "Available exporters:"
-	@$(foreach exp, $(EXPORTERS) slurm_exporter, echo "  - $(exp)";)
+	@$(foreach exp, $(EXPORTERS), echo "  - $(exp)";)
+
+# List all available exporters
+list:
+	@echo "Available exporters are:"
+	@$(foreach exp, $(EXPORTERS), echo "- $(exp)";)

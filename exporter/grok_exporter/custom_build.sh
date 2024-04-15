@@ -37,13 +37,14 @@ go install .
 # Prepare the binary directory
 ARCHIVE_DIR="/workspace/archives"
 EXPORTER_BIN_DIR="${ARCHIVE_DIR}/grok_exporter-${VERSION}.linux-amd64"
-sudo mkdir -p "$EXPORTER_BIN_DIR"
-sudo mv /home/builder/go/bin/grok_exporter "$EXPORTER_BIN_DIR/"
+mkdir -p "$EXPORTER_BIN_DIR"
+mv $HOME/go/bin/grok_exporter "$EXPORTER_BIN_DIR/"
 
 # Package the binary into a tarball
 echo "Packaging the exporter binary..."
 cd "$ARCHIVE_DIR"
-sudo tar czf "grok_exporter-${VERSION}.tar.gz" "grok_exporter-${VERSION}.linux-amd64/"
-sudo rm -rf "grok_exporter-${VERSION}.linux-amd64/"
+ls -alR $ARCHIVE_DIR
+tar czf "grok_exporter-${VERSION}.linux-amd64.tar.gz" "grok_exporter-${VERSION}.linux-amd64/"
+rm -rf "grok_exporter-${VERSION}.linux-amd64/"
 
 echo "Grok Exporter build and packaging complete."

@@ -1,5 +1,3 @@
-version: '2'
-
 services:
   centos7:
     image: rpmbuild/centos7

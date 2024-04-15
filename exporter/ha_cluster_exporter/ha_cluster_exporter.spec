@@ -38,7 +38,7 @@ Obsoletes:     ha_cluster_exporter
 %attr(-, root, root) /usr/local/bin/ha_cluster_exporter
 
 %changelog
-* Tue Apr 25 2024 Thomas Bourcey <thomas.bourcey@eviden.com> - 1.0.1
+* Mon Apr 15 2024 Thomas Bourcey <thomas.bourcey@eviden.com> - 1.0.1
 - Complete overhaul of the spec file and added support for RHEL 9 builds.
 
 * Wed Nov 17 2022 Thomas Bourcey <thomas.bourcey@eviden.com> - 1.0.0

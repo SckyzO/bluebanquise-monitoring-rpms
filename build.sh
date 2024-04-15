@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 # Initialize directories if not present
 test -d /workspace/build/ || sudo mkdir -p /workspace/build/
@@ -24,7 +24,7 @@ download_and_prepare() {
   local version=$(check_last_release "$repo")
   local url="https://github.com/$repo/releases/download/v${version}/${exporter}-${version}.${type}"
   local out="/workspace/archives/${exporter}-${version}.${type}"
-  sudo wget "$url" -O "$out" -c
+  wget "$url" -O "$out" -c
 }
 
 # Function to handle custom build scripts if they exist
