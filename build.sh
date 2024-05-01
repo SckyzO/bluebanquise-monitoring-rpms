@@ -1,48 +1,40 @@
-#!/bin/bash -x
+#!/bin/bash
 
-# Initialize directories if not present
+# Initialisation des répertoires s'ils ne sont pas présents
 test -d /workspace/build/ || sudo mkdir -p /workspace/build/
 test -d /workspace/build/rpms || sudo mkdir -p /workspace/build/rpms
 test -d /workspace/build/sources || sudo mkdir -p /workspace/build/sources
 test -d /workspace/archives/ || sudo mkdir -p /workspace/archives/
 
-# Utility function to check for the latest GitHub release
+# Fonction pour vérifier la dernière version GitHub
 check_last_release() {
-  local tag=$(curl --silent "https://api.github.com/repos/$1/releases/latest" | jq -r .tag_name)
-  # Strip out the initial 'v' and handle versions like v1.0-2
-  local clean_tag="${tag#v}"
-  if [[ -z "$clean_tag" || "$clean_tag" == "null" ]]; then
-    echo "1.0"  # Return 1.0 if the tag is empty or null
-  else
-    # Use awk to extract potentially more specific parts of the tag, if needed
-    echo "$clean_tag" | awk -F'-' '{print $1}'
-  fi
+    local tag=$(curl --silent "https://api.github.com/repos/$1/releases/latest" | jq -r .tag_name)
+    local clean_tag="${tag#v}"
+    if [[ -z "$clean_tag" || "$clean_tag" == "null" ]]; then
+        echo "1.0"
+    else
+        # Use awk to extract potentially more specific parts of the tag, if needed
+        echo "$clean_tag" | awk -F'-' '{print $1}'
+    fi
 }
 
-# Download the tarball for the given exporter from GitHub and rename it based on type
+# Fonction pour télécharger le tarball de GitHub et le renommer pour standardiser
 download_and_prepare() {
-  local repo=$1
-  local exporter=$2
-  local type=$3
-  local version=$(check_last_release "$repo")
-  local api_url="https://api.github.com/repos/${repo}/releases/latest"
+    local repo=$1
+    local exporter=$2
+    local type=$3
+    local version=$(check_last_release "$repo")
+    local release_info=$(curl -s "https://api.github.com/repos/${repo}/releases/latest")
 
-  # Retrieve the latest release information
-  local release_info=$(curl -s "$api_url")
+    echo "$release_info" | jq -r --arg type "$type" '.assets[] | select(.name | endswith($type)) | .browser_download_url' | while read url; do
+        local filename=$(basename "$url")
+        local out="/workspace/archives/${filename}"
+        wget "$url" -O "$out" -c
 
-  # Extract the URLs of the assets that match the type and download them
-  echo "$release_info" | jq -r --arg type "$type" '.assets[] | select(.name | endswith($type)) | .browser_download_url' | while read url; do
-    local filename=$(basename "$url")
-    local out="/workspace/archives/${filename}"
-    wget "$url" -O "$out" -c
-
-    # Construct the new standardized file name
-    local new_filename="${exporter}-${version}.linux-amd64.tar.gz"
-
-    # Rename the downloaded file
-    mv "/workspace/archives/${filename}" "/workspace/archives/${new_filename}"
-    echo "Renamed $filename to $new_filename"
-  done
+        local new_filename="${exporter}-${version}.linux-amd64.tar.gz"
+        mv "/workspace/archives/${filename}" "/workspace/archives/${new_filename}"
+        echo "Renamed $filename to $new_filename"
+    done
 }
 
 # Function to handle custom build scripts if they exist
@@ -176,6 +168,10 @@ build_snmp_exporter() {
   build_exporter "prometheus/snmp_exporter" "snmp_exporter" "linux-amd64.tar.gz" "/workspace/exporter"
 }
 
+build_slurm_exporter(){
+  build_exporter "vpenso/prometheus-slurm-exporter" "slurm_exporter" "linux-amd64.tar.gz" "/workspace/exporter"
+}
+
 # Handle the argument passed to the script to select the right function
 case $1 in
   389ds_exporter )
@@ -218,6 +214,8 @@ case $1 in
     build_smartctl_exporter ;;
   snmp_exporter )
     build_snmp_exporter ;;
+  slurm_exporter )
+    build_slurm_exporter ;;
   *)
     echo "Unknown exporter: $1"
     exit 1 ;;

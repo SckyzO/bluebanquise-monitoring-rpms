@@ -5,3 +5,4 @@ logs/
 */*.tar.gz
 */*.gz
 */*.log
+exporter/*_dev
