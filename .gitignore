@@ -1,4 +1,8 @@
+*.swp
 build/
 archives/
+logs/
 */*.tar.gz
 */*.gz
+*/*.log
+exporter/*_dev

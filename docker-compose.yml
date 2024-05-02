@@ -1,5 +1,3 @@
-version: '2'
-
 services:
   centos7:
     image: rpmbuild/centos7
@@ -13,10 +11,10 @@ services:
   rockylinux8:
     build:
       context: .
-      dockerfile: Dockerfile.builder8
+      dockerfile: dockerfiles/Dockerfile.builder8
       args:
-        UID: ${UID}
-    image: rpmbuild/prometheus-builder:rockylinux8
+        UID: ${UID:-1000}
+    image: rpmbuild/rpm-builder:rockylinux8
     environment:
     - VERSION
     - PKG
@@ -27,10 +25,10 @@ services:
   rockylinux9:
     build:
       context: .
-      dockerfile: Dockerfile.builder9
+      dockerfile: dockerfiles/Dockerfile.builder9
       args:
-        UID: ${UID}
-    image: rpmbuild/prometheus-builder:rockylinux9
+        UID: ${UID:-1000}
+    image: rpmbuild/rpm-builder:rockylinux9
     environment:
     - VERSION
     - PKG
