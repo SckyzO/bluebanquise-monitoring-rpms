@@ -4,8 +4,8 @@ This repository contains scripts for building various Prometheus exporters, comp
 
 ## Overview
 
-- `Makefile`: Orchestrates the building of multiple exporters.
-- `build.sh`: Script to build individual exporters either through standard or custom build procedures.
+- `Makefile`: Orchestrates the building of multiple exporters using Docker containers.
+- `build.sh`: Provides the functionality to build individual exporters either through standard or custom build procedures.
 - `exporter/`: Directory containing custom build scripts and RPM spec files for each exporter.
 
 ## Prerequisites
@@ -46,7 +46,7 @@ This repository contains scripts for building various Prometheus exporters, comp
 
 ### Makefile
 
-The `Makefile` contains several targets corresponding to different exporters:
+The `Makefile` contains several targets corresponding to different exporters and includes debugging and logging capabilities:
 
 - **Build All Exporters:**
 
@@ -76,9 +76,17 @@ The `Makefile` contains several targets corresponding to different exporters:
     make node_exporter
     ```
 
+- **Debugging Builds:**
+
+    Run builds in debug mode for detailed logging.
+
+    ```bash
+    make debug <exporter_name>
+    ```
+
 ### build.sh
 
-This script handles the building of each exporter. It checks for custom build scripts in the exporter's directory. If a custom build script is present, it executes that; otherwise, it proceeds with a standard build process.
+This script handles the building of each exporter based on the latest release information fetched from GitHub and supports downloading, renaming, and building RPMs. It checks for custom build scripts in the exporter's directory. If a custom build script is present, it executes that; otherwise, it proceeds with a standard build process.
 
 #### Adding a New Exporter
 
@@ -98,3 +106,20 @@ Some exporters require specific build steps, which are handled by custom scripts
 
 ```plaintext
 /workspace/exporter/<exporter_name>/custom_build.sh
+```
+
+## Available Commands
+
+You can list all available exporters and their corresponding commands using:
+
+```bash
+make list
+```
+
+## Contributors
+
+- Thomas Bourcey <thomas.bourcey@eviden.com>
+
+## License
+
+This project is licensed under the Apache License 2.0. For the full license text, see the LICENSE file in the repository or visit [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).

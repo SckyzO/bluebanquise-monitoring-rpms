@@ -48,7 +48,7 @@ $(EXPORTERS):
 
 clean:
 	@echo "Cleaning build artifacts..."
-	@rm -rf build/rpms/* build/sources/* archives/*
+	@rm -rf build/rpms/* build/sources/* archives/* logs/*
 
 debug:
 	@$(MAKE) $(filter-out $@,$(MAKECMDGOALS)) DEBUG=1
