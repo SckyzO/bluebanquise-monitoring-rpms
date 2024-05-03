@@ -116,10 +116,52 @@ You can list all available exporters and their corresponding commands using:
 make list
 ```
 
+## Debugging
+
+To facilitate debugging of the build process for each exporter, the Makefile includes a `debug` target. This target enables detailed logging that can help identify issues during the build. Here's how to use it:
+
+### Debugging a Specific Exporter
+
+To run a build in debug mode for a specific exporter, use the following command:
+
+```bash
+make debug <exporter_name>
+```
+
+Replace `<exporter_name>` with the actual name of the exporter you want to debug. This will execute the build process with verbose output, helping to pinpoint any potential issues.
+
+### Viewing Debug Logs
+
+The debug logs are stored in the `logs` directory specified in the Makefile. These logs include detailed information about the commands executed and their outputs, providing a comprehensive view of the build process.
+
+
+### Displaying Debug Information to the Console
+
+For real-time debug output directly to the console, you can set the `DEBUG` environment variable to `1` before running the make command. This will output all debug information to your terminal, which can be useful for immediate troubleshooting. Use the following command pattern:
+
+```bash
+DEBUG=1 make <exporter_name>
+```
+
+or for all exporters:
+
+```bash
+DEBUG=1 make all
+```
+
+This command will build the specified exporter or all exporters with debug mode enabled, allowing you to see each step of the process.
+
 ## Contributors
 
 - Thomas Bourcey <thomas.bourcey@eviden.com>
 
 ## License
 
+Indicate the license under which this project is distributed here.
+
+
+## License
+
 This project is licensed under the Apache License 2.0. For the full license text, see the LICENSE file in the repository or visit [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+
