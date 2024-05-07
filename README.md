@@ -35,7 +35,7 @@ This repository contains scripts for building various Prometheus exporters, comp
     Check Docker Compose:
 
     ```bash
-    docker-compose --version
+    docker compose --version
     ```
 
 3. **Prepare your environment:**
@@ -84,6 +84,14 @@ The `Makefile` contains several targets corresponding to different exporters and
     make debug <exporter_name>
     ```
 
+- **Build an exporter for a specific RedHat version:**
+
+    The default operating system version is RedHat 8. To create RedHat 9 RPMs, you must declare it: 
+
+    ```bash
+    RPM_DIST=rockylinux9 make <exporter_name>
+    ```
+
 ### build.sh
 
 This script handles the building of each exporter based on the latest release information fetched from GitHub and supports downloading, renaming, and building RPMs. It checks for custom build scripts in the exporter's directory. If a custom build script is present, it executes that; otherwise, it proceeds with a standard build process.
@@ -98,7 +106,7 @@ This script handles the building of each exporter based on the latest release in
 
     `/workspace/exporter/<exporter_name>/custom_build.sh`
 
-3. **Register the exporter in the Makefile and `build.sh` if necessary.**
+3. **Register the exporter in the Makefile and `build.sh`.**
 
 ### Custom Builds
 
