@@ -41,7 +41,7 @@ endef
 # Dynamically find exporters with a .spec file in their directory
 EXPORTERS := $(shell find exporter/* -type f -name '*.spec' -exec dirname {} \; | sed 's|exporter/||')
 
-all: clean $(EXPORTERS)
+all: $(EXPORTERS)
 
 $(EXPORTERS):
 	@$(call log_command,$@)
