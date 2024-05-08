@@ -7,7 +7,6 @@ set -euo pipefail
 VERSION="1.0"
 ARCHIVE_DIR="/workspace/archives"
 EXPORTER_DIR="${ARCHIVE_DIR}/389DS-exporter"
-EXPORTER_BIN_DIR="${EXPORTER_DIR}/${VERSION}.linux-amd64"
 
 # Clean up previous builds
 if [ -d "${EXPORTER_DIR}" ]; then
@@ -22,18 +21,18 @@ git clone https://github.com/ozgurcd/389DS-exporter "${EXPORTER_DIR}"
 # Build the exporter
 echo "Building the 389DS-exporter..."
 cd "${EXPORTER_DIR}"
-mkdir -p "${EXPORTER_BIN_DIR}"
-go build -o "${EXPORTER_BIN_DIR}/389ds_exporter"
+go build -o "389ds_exporter"
 
 # Package the binary
 echo "Packaging the exporter..."
-cd "${ARCHIVE_DIR}"
-tar czf "389ds_exporter-${VERSION}.tar.gz" -C "${EXPORTER_BIN_DIR}" .
+mkdir ${ARCHIVE_DIR}/389ds_exporter-${VERSION}.linux-amd64
+mv "${EXPORTER_DIR}/389ds_exporter" ${ARCHIVE_DIR}/389ds_exporter-${VERSION}.linux-amd64/
+cd ${ARCHIVE_DIR}
+tar czf "${ARCHIVE_DIR}/389ds_exporter-${VERSION}.linux-amd64.tar.gz" 389ds_exporter-${VERSION}.linux-amd64/
 
-# Move the package to the final directory (if different)
-# This step seems redundant in your script as it copies within the same directory
-# I'll keep it in case you have different intentions for modifications.
-echo "Moving the tarball to the archives directory."
-cp "${ARCHIVE_DIR}/389ds_exporter-${VERSION}.tar.gz" "${ARCHIVE_DIR}/"
+# Clear archives
+rm -Rf ${EXPORTER_DIR}  ${ARCHIVE_DIR}/389ds_exporter-${VERSION}.linux-amd64/
+
 
 echo "Build and packaging complete."
+

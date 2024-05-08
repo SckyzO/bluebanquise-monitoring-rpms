@@ -15,7 +15,7 @@ Summary:       Prometheus exporter for 389-DS LDAP Server
 License:       Apache License 2.0
 URL:           https://github.com/ozgurcd/389DS-exporter
 
-Source0:       389ds_exporter-%{version}.tar.gz
+Source0:       389ds_exporter-%{version}.linux-amd64.tar.gz
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 Obsoletes:     389ds_exporter
