@@ -1,5 +1,7 @@
 #!/bin/bash
 
+#set -x
+
 # Initialisation des répertoires s'ils ne sont pas présents
 test -d /workspace/build/ || sudo mkdir -p /workspace/build/
 test -d /workspace/build/rpms || sudo mkdir -p /workspace/build/rpms

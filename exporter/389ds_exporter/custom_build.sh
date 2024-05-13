@@ -25,6 +25,7 @@ go build -o "389ds_exporter"
 
 # Package the binary
 echo "Packaging the exporter..."
+<<<<<<< HEAD
 mkdir ${ARCHIVE_DIR}/389ds_exporter-${VERSION}.linux-amd64
 mv "${EXPORTER_DIR}/389ds_exporter" ${ARCHIVE_DIR}/389ds_exporter-${VERSION}.linux-amd64/
 cd ${ARCHIVE_DIR}
@@ -33,6 +34,16 @@ tar czf "${ARCHIVE_DIR}/389ds_exporter-${VERSION}.linux-amd64.tar.gz" 389ds_expo
 # Clear archives
 rm -Rf ${EXPORTER_DIR}  ${ARCHIVE_DIR}/389ds_exporter-${VERSION}.linux-amd64/
 
+=======
+cd "${ARCHIVE_DIR}"
+tar czf "389ds_exporter-${VERSION}.linux-amd64.tar.gz" -C "${EXPORTER_BIN_DIR}" .
+
+# Move the package to the final directory (if different)
+# This step seems redundant in your script as it copies within the same directory
+# I'll keep it in case you have different intentions for modifications.
+echo "Moving the tarball to the archives directory."
+cp "${ARCHIVE_DIR}/389ds_exporter-${VERSION}.linux-amd64.tar.gz" "${ARCHIVE_DIR}/"
+>>>>>>> 3654cb9 (update 389ds exporter)
 
 echo "Build and packaging complete."
 
