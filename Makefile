@@ -13,29 +13,29 @@ DOCKER_COMPOSE_RUN := docker-compose run --rm $(RPM_DIST)
 DEBUG_LOG = logs/build_debug.log
 
 # Ensure the logs directory exists
-$(shell mkdir -p logs)
+$(shell mkdir -p logs build/rpms build/sources archives)
 
 # Function to determine logging behavior
 define log_command
-    if [ "$(DEBUG)" = "1" ]; then \
-        echo "@@@@@@@@@@@@ $1 @@@@@@@@@@@@" >> $(DEBUG_LOG); \
-        echo "Running $1 in $(DOCKER_OS_RELEASE) environment in DEBUG MODE" >> $(DEBUG_LOG); \
-        DEBUG=$(DEBUG) DOCKER_OS_RELEASE=$(DOCKER_OS_RELEASE) PKG=$1 $(DOCKER_COMPOSE_RUN) | tee -a $(DEBUG_LOG); \
-        RESULT=$$?; \
-        if [ $$RESULT -eq 0 ]; then \
-            echo "Build of $1 succeeded." | tee -a $(DEBUG_LOG); \
-        else \
-            echo "Build of $1 failed with exit code $$RESULT." | tee -a $(DEBUG_LOG); \
-            exit $$RESULT; \
-        fi; \
-    else \
-        DEBUG=$(DEBUG) DOCKER_OS_RELEASE=$(DOCKER_OS_RELEASE) PKG=$1 $(DOCKER_COMPOSE_RUN) >/dev/null 2>&1; \
-        RESULT=$$?; \
-        if [ $$RESULT -ne 0 ]; then \
-            echo "Build of $1 failed with exit code $$RESULT." >&2; \
-            exit $$RESULT; \
-        fi; \
-    fi
+	if [ "$(DEBUG)" = "1" ]; then \
+		echo "@@@@@@@@@@@@ $1 @@@@@@@@@@@@" >> $(DEBUG_LOG); \
+		echo "Running $1 in $(DOCKER_OS_RELEASE) environment in DEBUG MODE" >> $(DEBUG_LOG); \
+		DEBUG=$(DEBUG) DOCKER_OS_RELEASE=$(DOCKER_OS_RELEASE) PKG=$1 $(DOCKER_COMPOSE_RUN) | tee -a $(DEBUG_LOG); \
+		RESULT=$$?; \
+		if [ $$RESULT -eq 0 ]; then \
+			echo "Build of $1 succeeded." | tee -a $(DEBUG_LOG); \
+		else \
+			echo "Build of $1 failed with exit code $$RESULT." | tee -a $(DEBUG_LOG); \
+			exit $$RESULT; \
+		fi; \
+	else \
+		DEBUG=$(DEBUG) DOCKER_OS_RELEASE=$(DOCKER_OS_RELEASE) PKG=$1 $(DOCKER_COMPOSE_RUN) >/dev/null 2>&1; \
+		RESULT=$$?; \
+		if [ $$RESULT -ne 0 ]; then \
+			echo "Build of $1 failed with exit code $$RESULT." >&2; \
+			exit $$RESULT; \
+		fi; \
+	fi
 endef
 
 # Dynamically find exporters with a .spec file in their directory
@@ -52,6 +52,7 @@ clean:
 
 debug:
 	@$(MAKE) $(filter-out $@,$(MAKECMDGOALS)) DEBUG=1
+
 %:
 	@: # do nothing
 
@@ -70,3 +71,4 @@ help:
 list:
 	@echo "Available exporters are:"
 	@$(foreach exp,$(EXPORTERS),echo "- $(exp)";)
+
