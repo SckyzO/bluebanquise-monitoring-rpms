@@ -49,6 +49,17 @@ curl -s $REPO_BTRFS | grep -oP 'href="\K[^"]*.rpm' | while read rpm; do
     wget "${REPO_BTRFS}${rpm}" -P /tmp
 done
 sudo dnf install /tmp/*.rpm -y
+sudo dnf install podman -y
+
+# Install Go from the official source
+GO_VERSION="1.22.3"
+wget "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" -O /tmp/go${GO_VERSION}.linux-amd64.tar.gz
+sudo tar -C /usr/local -xzf /tmp/go${GO_VERSION}.linux-amd64.tar.gz
+
+# Set up environment variables for Go
+export GOROOT=/usr/local/go
+export GOPATH=$HOME/go
+export PATH=$GOPATH/bin:$GOROOT/bin:$PATH
 
 # Build the binary
 echo "Building the exporter."
