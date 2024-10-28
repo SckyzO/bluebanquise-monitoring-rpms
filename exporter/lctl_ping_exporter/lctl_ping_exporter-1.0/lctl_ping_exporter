@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+
+"""
+Lustre lctl Prometheus Exporter
+Author: Thomas Bourcey
+"""
+
+import argparse
+from prometheus_client import start_http_server, Gauge
+from prometheus_client.core import REGISTRY
+from prometheus_client.exposition import make_wsgi_app
+import subprocess
+import time
+import re
+from wsgiref.simple_server import make_server, WSGIRequestHandler
+
+# Function to get metrics via lctl
+def get_lctl_metrics():
+    metrics = {}
+    command = "lctl list_nids"
+    result = subprocess.run(command, shell=True, capture_output=True, text=True)
+    interfaces = result.stdout.strip().split()
+
+    # Map to associate interfaces with infiniband values
+    infiniband_map = {
+        'o2ib': 'ndr',
+        'o2ib1': 'ndr',
+        'o2ib2': 'hdr',
+        'o2ib3': 'opa',
+        'o2ib4': 'opa'
+    }
+
+    # Loop through each interface and run lctl ping command
+    for interface in interfaces:
+        ip_address, ib_interface = re.split('@', interface)
+        infiniband = infiniband_map.get(ib_interface, 'unknown')
+        command = f"lctl ping {interface} >/dev/null; echo $?"
+        result = subprocess.run(command, shell=True, capture_output=True, text=True)
+        status = int(result.stdout.strip())
+        metrics[interface] = {
+            'ip_address': ip_address,
+            'interface': ib_interface,
+            'infiniband': infiniband,
+            'status': status
+        }
+    return metrics
+
+# Configure command line arguments
+parser = argparse.ArgumentParser(
+    description='Prometheus exporter for lctl metrics',
+    epilog='Example usage: python3 lctl_ping.py --port 8080'
+)
+parser.add_argument('--port', dest='port', type=int, default=8000, help='Port to listen on (default: 8000)')
+args = parser.parse_args()
+
+# Create a Gauge for lctl_ping metrics
+lctl_ping_gauge = Gauge('lctl_ping', 'Lustre lctl ping results', ['interface', 'address', 'infiniband'])
+
+# Function to update metrics
+def update_metrics():
+    metrics = get_lctl_metrics()
+    for interface, data in metrics.items():
+        lctl_ping_gauge.labels(interface=data['interface'], address=data['ip_address'], infiniband=data['infiniband']).set(data['status'])
+
+# Custom class to handle HTTP requests
+class CustomRequestHandler(WSGIRequestHandler):
+    def log_message(self, format, *args):
+        # Override to disable default logging
+        pass
+
+    def handle(self):
+        if self.path == '/metrics':
+            super().handle()
+        else:
+            self.send_response(200)
+            self.send_header('Content-Type', 'text/plain')
+            self.end_headers()
+            self.wfile.write(b"Please go to /metrics to see the metrics.\n")
+
+if __name__ == '__main__':
+    # Start the HTTP server for Prometheus
+    start_http_server(args.port)
+    print(f"Starting Prometheus exporter on port {args.port}")
+    
+    # Update metrics at regular intervals
+    while True:
+        update_metrics()
+        time.sleep(10)  # Update metrics every 10 seconds
+
+    # Configure the WSGI application to handle HTTP requests
+    app = make_wsgi_app(REGISTRY)
+    httpd = make_server('', args.port, app, handler_class=CustomRequestHandler)
+    httpd.serve_forever()
+

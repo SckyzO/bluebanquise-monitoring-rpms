@@ -1,0 +1,139 @@
+#!/usr/bin/python3.11 
+# -*- coding: utf-8 -*-
+
+"""rackpower-exporter.py
+
+    This Python exporter will query Sequana3 rack power consumption values 
+    through an HTTP request. This feature is available for XH3000 P3MC with 
+    a firmare level > 151. 
+
+    @author: samuel.garcia@eviden.com"""
+
+
+import urllib3
+import time 
+import json
+import argparse
+import logging
+import sys
+import signal
+
+from base64 import b64encode
+from urllib3.util.retry import Retry
+from ClusterShell.NodeSet import NodeSet
+from prometheus_client import (
+    Gauge, 
+    start_http_server, 
+    REGISTRY, 
+    GC_COLLECTOR, 
+    PLATFORM_COLLECTOR, 
+    PROCESS_COLLECTOR
+)
+
+logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
+
+# Disable default Prometheus exported metrics
+REGISTRY.unregister(GC_COLLECTOR)
+REGISTRY.unregister(PLATFORM_COLLECTOR)
+REGISTRY.unregister(PROCESS_COLLECTOR)
+
+# The 2 metrics collected 
+sequana3_power_excluding_pump = Gauge(
+                                'sequana3_power_excluding_pump', 
+                                'Rack power consumption in watt (excluding pump consumption)',
+                                ['pmc'])
+
+sequana3_power_including_pump = Gauge(
+                                'sequana3_power_including_pump', 
+                                'Rack power consumption in watt (including pump consumption)',
+                                ['pmc'])
+
+# Default header and endpoint used to collect power values
+endpoint = 'redfish/v1/Chassis/P3G/PowerSubsystem/Oem/Eviden_com/PowerConsumption/Values'
+http = urllib3.PoolManager(cert_reqs='CERT_NONE', retries=Retry(total=1))
+
+def signal_handler(sig, frame):
+    """System signal handler 
+        
+    Used to trap Ctrl+C and exit the program.
+
+    Parameters
+    ----------
+    sig : signal.Signals
+        The signal to handle.
+    frame : function 
+        The current function to trigger. 
+    """
+    logging.info("Received Ctrl+C, closing exporter.")
+    sys.exit(2)
+
+def getMetrics(pmc_nodeset):
+    """Collect the rack power consumptions metrics 
+        
+    Sends an HTTP GET request on the endpoint exposing rack power metrics.
+    Metrics are collected in 2 Prometheus Gauges :
+        * sequana3_power_excluding_pump
+        * sequana3_power_including_pump
+
+    Parameters
+    ----------
+    pmc_nodeset : ClusterShell.NodeSet.NodeSet
+        A nodeset to query, should contains the PMCs hostnames.
+    """
+
+    for pmc in pmc_nodeset:
+
+        try:
+            url = f'https://{pmc}/{endpoint}'
+            response = http.request('GET', url, headers=headers)
+
+            if response.status != 200:
+                logging.error(f"Error querying endpoint for host {pmc}: {response.data.decode('utf-8')} [{response.status}]")
+            else:
+                data=json.loads(response.data)
+
+                # Update gauge values
+                sequana3_power_excluding_pump.labels(pmc).set(
+                    data['Values'][-1]['PowerInWattExcludingPump'])
+                sequana3_power_including_pump.labels(pmc).set(
+                    data['Values'][-1]['PowerInWattIncludingPump'])
+
+        except urllib3.exceptions.MaxRetryError as maxretryerror:
+            logging.error(f'HTTP request error : {maxretryerror}')
+
+
+def getArguments():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('nodeset', type=NodeSet,
+                            help="A pmc or a nodeset of the PMCs to query.")
+    parser.add_argument('port', type=int,
+                            help="A port for the HTTP server to listen on.")
+    parser.add_argument('credentials', type=str,
+                            help="""
+                            The credentials to login through the P3MC
+                            (formatted \"user:password\").""")
+
+    return parser.parse_args()
+
+if __name__ == '__main__':
+    # Disable unsecured HTTPS warnings
+    urllib3.disable_warnings()
+    args = getArguments()
+    global headers
+
+    # PMC credentials
+    auth = b64encode(f"{args.credentials}".encode()).decode()
+    headers = {'Content-type': 'application/json', 'Authorization': f'Basic {auth}'}
+    signal.signal(signal.SIGINT, signal_handler)
+    try:
+        start_http_server(args.port)
+        logging.info(f'HTTP server listening on {args.port}.')
+    except OSError as oserror:
+        logging.error(f'Cannot start HTTP server : {oserror}')
+        sys.exit()
+
+    while True:
+        # Metrics are refreshed every 5 seconds
+        getMetrics(args.nodeset)
+        time.sleep(5)

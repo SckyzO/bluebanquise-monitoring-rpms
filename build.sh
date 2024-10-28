@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#set -x
+set -x
 
 # Initialisation des répertoires s'ils ne sont pas présents
 test -d /workspace/build/ || sudo mkdir -p /workspace/build/
@@ -171,7 +171,15 @@ build_snmp_exporter() {
 }
 
 build_slurm_exporter(){
-  build_exporter "vpenso/prometheus-slurm-exporter" "slurm_exporter" "linux-amd64.tar.gz" "/workspace/exporter"
+  build_exporter "sckyzo/slurm_exporter" "slurm_exporter" "linux-amd64.tar.gz" "/workspace/exporter"
+}
+
+build_rackpower_exporter(){
+  build_exporter "rackpower_exporter" "rackpower_exporter" "tar.gz" "/workspace/exporter"
+}
+
+build_lctl_ping_exporter(){
+  build_exporter "lctl_ping_exporter" "lctl_ping_exporter" "tar.gz" "/workspace/exporter"
 }
 
 # Handle the argument passed to the script to select the right function
@@ -218,6 +226,10 @@ case $1 in
     build_snmp_exporter ;;
   slurm_exporter )
     build_slurm_exporter ;;
+  rackpower_exporter )
+    build_rackpower_exporter ;;
+  lctl_ping_exporter )
+    build_lctl_ping_exporter ;;
   *)
     echo "Unknown exporter: $1"
     exit 1 ;;
