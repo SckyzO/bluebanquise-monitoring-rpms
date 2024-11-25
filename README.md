@@ -165,11 +165,6 @@ This command will build the specified exporter or all exporters with debug mode 
 
 ## License
 
-Indicate the license under which this project is distributed here.
-
-
-## License
-
 This project is licensed under the Apache License 2.0. For the full license text, see the LICENSE file in the repository or visit [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
 
 
