@@ -24,14 +24,15 @@ Obsoletes:     slurm_exporter
 [Use with BlueBanquise] Prometheus collector and exporter for metrics extracted from the Slurm resource scheduling system.
 
 %prep
-%setup -n slurm_exporter-%{version}.linux-amd64
+#%setup -n slurm_exporter-%{version}.linux-amd64
+#%setup -n slurm_exporter-%{version}.linux-amd64
 
 %build
 
 %pre
 
 %install
-%{__install} -D -m 755 prometheus-slurm-exporter %{buildroot}/usr/local/bin/slurm_exporter
+%{__install} -D -m 755 slurm_exporter %{buildroot}/usr/local/bin/slurm_exporter
 
 %files
 %defattr(-,root,root,-)
