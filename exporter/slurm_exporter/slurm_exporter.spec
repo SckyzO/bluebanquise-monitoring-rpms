@@ -13,33 +13,36 @@ Version:       %{pkgversion}
 Release:       %{pkgrevision}%{?dist}
 Summary:       Prometheus exporter for performance metrics from Slurm.
 License:       Apache License 2.0
-URL:           https://github.com/vpenso/prometheus-slurm-exporter
+URL:           https://github.com/sckyzo/slurm_exporter
 
-Source0:       slurm_exporter-%{version}.linux-amd64.tar.gz
+Source0:       %{pkgname}-%{version}.linux-amd64.tar.gz
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
-Obsoletes:     slurm_exporter
+Obsoletes:     %{pkgname}
 
 %description
 [Use with BlueBanquise] Prometheus collector and exporter for metrics extracted from the Slurm resource scheduling system.
 
 %prep
-%setup -n slurm_exporter-%{version}.linux-amd64
+%setup -q -c -T
+tar -xf %{SOURCE0}
 
 %build
 
-%pre
-
 %install
-%{__install} -D -m 755 prometheus-slurm-exporter %{buildroot}/usr/local/bin/slurm_exporter
+%{__install} -D -m 755 slurm_exporter %{buildroot}/usr/local/bin/slurm_exporter
 
 %files
 %defattr(-,root,root,-)
-%attr(-, root, root) /usr/local/bin/slurm_exporter
+%attr(0755,root,root) /usr/local/bin/slurm_exporter
 
 %changelog
-* Tue Apr 25 2024 Thomas Bourcey <thomas.bourcey@eviden.com> - 1.0.1
-- Complete overhaul of the spec file and added support for RHEL 9 builds.
+* Fri Feb 14 2024 Thomas Bourcey<thomas.bourcey@eviden.com> - 1.1
+- Replace vpenso by sckyzo slurm_exporter 0.30
 
-* Wed Nov 17 2022 Thomas Bourcey <thomas.bourcey@eviden.com> - 1.0.0
-- Initial packaging
+* Tue Jan 2 2024 Thomas Bourcey <thomas.bourcey@eviden.com> - 1.0.1
+- Adjusted spec file for archive without directory structure.
+
+* Wed Nov 16 2022 Thomas Bourcey <thomas.bourcey@eviden.com> - 1.0.0
+- Initial packaging.
+
