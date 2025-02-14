@@ -39,7 +39,7 @@ results, and can trigger alerts if some condition is observed to be true.
 %{__install} -d -m 750 %{buildroot}/var/lib/prometheus/data
 
 %{__install} -d -m 755 %{buildroot}/etc/prometheus
-#%{__cp} -r prometheus.yml %{buildroot}/etc/prometheus/prometheus.yml
+%{__cp} -r prometheus.yml %{buildroot}/etc/prometheus/prometheus.yml
 
 %{__install} -d -m 755 %{buildroot}/usr/local/bin
 %{__install} -m 755 prometheus %{buildroot}/usr/local/bin/prometheus
