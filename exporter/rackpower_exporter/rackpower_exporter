@@ -1,4 +1,4 @@
-#!/usr/bin/python3.11 
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
 """rackpower-exporter.py
@@ -9,131 +9,299 @@
 
     @author: samuel.garcia@eviden.com"""
 
+import argparse
+import json
+import logging
+import os
+import signal
+import sys
+import time
+import yaml
+import re
+import threading
+from datetime import datetime, timezone
+from base64 import b64encode
+from concurrent.futures import ThreadPoolExecutor
+from wsgiref.simple_server import make_server, WSGIRequestHandler
 
 import urllib3
-import time 
-import json
-import argparse
-import logging
-import sys
-import signal
-
-from base64 import b64encode
 from urllib3.util.retry import Retry
 from ClusterShell.NodeSet import NodeSet
 from prometheus_client import (
-    Gauge, 
-    start_http_server, 
-    REGISTRY, 
-    GC_COLLECTOR, 
-    PLATFORM_COLLECTOR, 
+    make_wsgi_app,
+    REGISTRY,
+    GC_COLLECTOR,
+    PLATFORM_COLLECTOR,
     PROCESS_COLLECTOR
 )
-
-logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
+from prometheus_client.core import GaugeMetricFamily, CounterMetricFamily
 
 # Disable default Prometheus exported metrics
 REGISTRY.unregister(GC_COLLECTOR)
 REGISTRY.unregister(PLATFORM_COLLECTOR)
 REGISTRY.unregister(PROCESS_COLLECTOR)
 
-# The 2 metrics collected 
-sequana3_power_excluding_pump = Gauge(
-                                'sequana3_power_excluding_pump', 
-                                'Rack power consumption in watt (excluding pump consumption)',
-                                ['pmc'])
 
-sequana3_power_including_pump = Gauge(
-                                'sequana3_power_including_pump', 
-                                'Rack power consumption in watt (including pump consumption)',
-                                ['pmc'])
-
-# Default header and endpoint used to collect power values
-endpoint = 'redfish/v1/Chassis/P3G/PowerSubsystem/Oem/Eviden_com/PowerConsumption/Values'
-http = urllib3.PoolManager(cert_reqs='CERT_NONE', retries=Retry(total=1))
-
-def signal_handler(sig, frame):
-    """System signal handler 
+class RackPowerExporter:
+    def __init__(self, config):
+        self.config = config
+        self.nodeset = NodeSet(config.get('nodeset'))
+        self.port = config.get('port', 9101)
+        self.refresh_interval = config.get('refresh_interval', 5)
+        self.max_workers = config.get('max_workers', 10)
+        self.endpoint = config.get('endpoint', 'redfish/v1/Chassis/P3G/PowerSubsystem/Oem/Eviden_com/PowerConsumption/Values')
         
-    Used to trap Ctrl+C and exit the program.
-
-    Parameters
-    ----------
-    sig : signal.Signals
-        The signal to handle.
-    frame : function 
-        The current function to trigger. 
-    """
-    logging.info("Received Ctrl+C, closing exporter.")
-    sys.exit(2)
-
-def getMetrics(pmc_nodeset):
-    """Collect the rack power consumptions metrics 
+        # Setup HTTP client
+        user = config.get('user')
+        password = config.get('password')
+        ca_bundle = config.get('ca_bundle')
         
-    Sends an HTTP GET request on the endpoint exposing rack power metrics.
-    Metrics are collected in 2 Prometheus Gauges :
-        * sequana3_power_excluding_pump
-        * sequana3_power_including_pump
+        if not all([self.nodeset, user, password]):
+            logging.error('Missing required configuration: nodeset, user, or password.')
+            sys.exit(1)
 
-    Parameters
-    ----------
-    pmc_nodeset : ClusterShell.NodeSet.NodeSet
-        A nodeset to query, should contains the PMCs hostnames.
-    """
+        auth = b64encode(f"{user}:{password}".encode()).decode()
+        self.headers = {
+            'Content-type': 'application/json', 
+            'Authorization': f'Basic {auth}',
+            'User-Agent': 'rackpower_exporter/1.0.0'
+        }
 
-    for pmc in pmc_nodeset:
+        if ca_bundle:
+            self.http = urllib3.PoolManager(cert_reqs='CERT_REQUIRED', ca_certs=ca_bundle, retries=Retry(total=1))
+        else:
+            self.http = urllib3.PoolManager(cert_reqs='CERT_NONE', retries=Retry(total=1))
+            logging.warning("Certificate verification is disabled. This is not recommended.")
 
+        # Internal Data Storage (Buffer)
+        # Structure: { pmc_name: { 'rack_id': str, 'status': int, 'data': [ {'ts': float, 'excl': float, 'incl': float}, ... ] } }
+        self.pmc_data = {}
+        self.data_lock = threading.Lock()
+        
+        # Pre-populate map
+        for pmc in self.nodeset:
+            match = re.search(r'\d+', pmc)
+            rack_id = f"sequana_{match.group()}" if match else "unknown"
+            self.pmc_data[pmc] = {
+                'rack_id': rack_id,
+                'status': 0, # 0 = down, 1 = up
+                'data': []
+            }
+
+        # Health stats
+        self.scrapes_total = 0
+        self.errors_total = 0
+        self.last_scrape_ts = 0
+
+        self.running = True
+        signal.signal(signal.SIGINT, self.signal_handler)
+
+    def signal_handler(self, sig, frame):
+        logging.info("Received Ctrl+C, closing exporter.")
+        self.running = False
+        sys.exit(0)
+
+    def collect(self):
+        """
+        Prometheus Custom Collector interface.
+        Yields metrics from the internal buffer.
+        """
+        # Power Metrics (Unified)
+        power_metric = GaugeMetricFamily(
+            'sequana3_rack_power_watts',
+            'Rack power consumption in watts',
+            labels=['pmc', 'rack_id', 'pump_included']
+        )
+        
+        # Up Metric
+        up_metric = GaugeMetricFamily(
+            'sequana3_pmc_up',
+            'Status of the PMC scrape (1 = success, 0 = failure)',
+            labels=['pmc', 'rack_id']
+        )
+
+        with self.data_lock:
+            # Stats metrics
+            yield GaugeMetricFamily(
+                'sequana3_exporter_scrapes_total',
+                'Total number of collection cycles',
+                value=self.scrapes_total
+            )
+            yield GaugeMetricFamily(
+                'sequana3_exporter_errors_total',
+                'Total number of individual PMC scrape errors',
+                value=self.errors_total
+            )
+            yield GaugeMetricFamily(
+                'sequana3_exporter_last_scrape_timestamp_seconds',
+                'The last time a collection cycle was completed.',
+                value=self.last_scrape_ts
+            )
+
+            # PMC Metrics
+            for pmc, info in self.pmc_data.items():
+                rack_id = info['rack_id']
+                
+                # Yield UP status
+                up_metric.add_metric([pmc, rack_id], info['status'])
+
+                # Yield all buffered power data points
+                for point in info['data']:
+                    ts = point['ts']
+                    excl = point['excl']
+                    incl = point['incl']
+                    
+                    # Add samples with explicit timestamp
+                    power_metric.add_metric([pmc, rack_id, "false"], excl, timestamp=ts)
+                    power_metric.add_metric([pmc, rack_id, "true"], incl, timestamp=ts)
+        
+        yield power_metric
+        yield up_metric
+
+    def query_pmc(self, pmc):
+        """Query a single PMC and update internal buffer."""
         try:
-            url = f'https://{pmc}/{endpoint}'
-            response = http.request('GET', url, headers=headers)
+            url = f'https://{pmc}/{self.endpoint}'
+            response = self.http.request('GET', url, headers=self.headers, timeout=10.0)
 
             if response.status != 200:
-                logging.error(f"Error querying endpoint for host {pmc}: {response.data.decode('utf-8')} [{response.status}]")
+                logging.error(f"Error querying {url}: {response.data.decode('utf-8')} [{response.status}]")
+                with self.data_lock:
+                    self.pmc_data[pmc]['status'] = 0
+                    self.errors_total += 1
+                return
+
+            data = json.loads(response.data)
+
+            if 'Values' not in data or not data['Values']:
+                logging.error(f"No 'Values' in response from {pmc}")
+                with self.data_lock:
+                    self.pmc_data[pmc]['status'] = 0
+                    self.errors_total += 1
+                return
+            
+            # Process ALL values in the history
+            new_data_points = []
+            for entry in data['Values']:
+                power_excl = entry.get('PowerInWattExcludingPump')
+                power_incl = entry.get('PowerInWattIncludingPump')
+                timestamp_us = entry.get('TimestampInMicrosecond')
+
+                if power_excl is not None and power_incl is not None and timestamp_us is not None:
+                     new_data_points.append({
+                         'ts': timestamp_us / 1e6, # Convert to seconds
+                         'excl': power_excl,
+                         'incl': power_incl
+                     })
+            
+            with self.data_lock:
+                self.pmc_data[pmc]['status'] = 1
+                self.pmc_data[pmc]['data'] = new_data_points # Replace old data with new batch
+
+        except Exception as e:
+            logging.error(f"Failed to scrape {pmc}: {e}")
+            with self.data_lock:
+                self.pmc_data[pmc]['status'] = 0
+                self.errors_total += 1
+
+    def run(self):
+        """Main loop with custom WSGI server."""
+        
+        # Register THIS instance as the collector
+        REGISTRY.register(self)
+
+        # Define the WSGI app
+        app = make_wsgi_app()
+
+        def route_app(environ, start_response):
+            path = environ.get('PATH_INFO', '')
+            if path == '/metrics':
+                return app(environ, start_response)
+            elif path == '/':
+                status = '200 OK'
+                headers = [('Content-type', 'text/html; charset=utf-8')]
+                start_response(status, headers)
+                return [b'''
+                    <html>
+                    <head><title>RackPower Exporter</title></head>
+                    <body>
+                    <h1>RackPower Exporter</h1>
+                    <p><a href="/metrics">Metrics</a></p>
+                    </body>
+                    </html>
+                ''']
             else:
-                data=json.loads(response.data)
+                status = '404 Not Found'
+                headers = [('Content-type', 'text/plain')]
+                start_response(status, headers)
+                return [b'Not Found']
 
-                # Update gauge values
-                sequana3_power_excluding_pump.labels(pmc).set(
-                    data['Values'][-1]['PowerInWattExcludingPump'])
-                sequana3_power_including_pump.labels(pmc).set(
-                    data['Values'][-1]['PowerInWattIncludingPump'])
+        class QuietHandler(WSGIRequestHandler):
+            def log_message(self, format, *args):
+                pass
 
-        except urllib3.exceptions.MaxRetryError as maxretryerror:
-            logging.error(f'HTTP request error : {maxretryerror}')
+        try:
+            httpd = make_server('', self.port, route_app, handler_class=QuietHandler)
+            logging.info(f'HTTP server listening on {self.port}. Metrics available at /metrics')
+        except OSError as oserror:
+            logging.error(f'Cannot start HTTP server on port {self.port}: {oserror}')
+            sys.exit(1)
 
+        # Background Scraper Loop
+        def scraper_loop():
+            while self.running:
+                start_time = time.monotonic()
+                
+                with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
+                    executor.map(self.query_pmc, self.nodeset)
+                
+                with self.data_lock:
+                    self.scrapes_total += 1
+                    self.last_scrape_ts = time.time()
 
-def getArguments():
+                elapsed_time = time.monotonic() - start_time
+                sleep_time = max(0, self.refresh_interval - elapsed_time)
+                
+                waited = 0
+                while waited < sleep_time and self.running:
+                    time.sleep(0.5)
+                    waited += 0.5
+
+        scraper_thread = threading.Thread(target=scraper_loop, daemon=True)
+        scraper_thread.start()
+
+        try:
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            pass
+        finally:
+            self.running = False
+            httpd.server_close()
+            logging.info("Exporter stopped.")
+
+def get_arguments():
     parser = argparse.ArgumentParser()
-
-    parser.add_argument('nodeset', type=NodeSet,
-                            help="A pmc or a nodeset of the PMCs to query.")
-    parser.add_argument('port', type=int,
-                            help="A port for the HTTP server to listen on.")
-    parser.add_argument('credentials', type=str,
-                            help="""
-                            The credentials to login through the P3MC
-                            (formatted \"user:password\").""")
-
+    parser.add_argument('-c', '--config',
+                        default='/etc/rackpower_exporter/rackpower.yml',
+                        help="Path to the configuration file.")
     return parser.parse_args()
 
+
 if __name__ == '__main__':
-    # Disable unsecured HTTPS warnings
+    logging.basicConfig(format='%(asctime)s %(levelname)s: %(message)s', level=logging.INFO)
     urllib3.disable_warnings()
-    args = getArguments()
-    global headers
+    
+    args = get_arguments()
 
-    # PMC credentials
-    auth = b64encode(f"{args.credentials}".encode()).decode()
-    headers = {'Content-type': 'application/json', 'Authorization': f'Basic {auth}'}
-    signal.signal(signal.SIGINT, signal_handler)
     try:
-        start_http_server(args.port)
-        logging.info(f'HTTP server listening on {args.port}.')
-    except OSError as oserror:
-        logging.error(f'Cannot start HTTP server : {oserror}')
-        sys.exit()
+        with open(args.config, 'r') as f:
+            config = yaml.safe_load(f)
+    except FileNotFoundError:
+        logging.error(f'Configuration file not found: {args.config}')
+        sys.exit(1)
+    except yaml.YAMLError as e:
+        logging.error(f'Error parsing YAML file: {e}')
+        sys.exit(1)
 
-    while True:
-        # Metrics are refreshed every 5 seconds
-        getMetrics(args.nodeset)
-        time.sleep(5)
+    exporter = RackPowerExporter(config)
+    exporter.run()

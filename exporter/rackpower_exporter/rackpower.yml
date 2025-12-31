@@ -1,0 +1,24 @@
+# Configuration for the Rack Power Exporter
+
+# Nodeset of the PMCs to query (e.g., "pmc[1-4]")
+# nodeset: 
+
+# Port for the exporter to listen on
+port: 9101
+
+# Credentials for the P3MC
+# user:
+# password:
+
+# Path to the CA bundle to verify the HTTPS certificate.
+# If not provided, certificate verification will be disabled (not recommended).
+# ca_bundle: /path/to/ca.pem
+
+# Interval in seconds to refresh the metrics
+refresh_interval: 5
+
+# Maximum number of threads to use for parallel execution
+max_workers: 10
+
+# Redfish endpoint to query
+endpoint: 'redfish/v1/Chassis/P3G/PowerSubsystem/Oem/Eviden_com/PowerConsumption/Values'

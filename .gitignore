@@ -6,3 +6,4 @@ logs/
 */*.gz
 */*.log
 exporter/*_dev
+.env

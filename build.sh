@@ -2,6 +2,12 @@
 
 set -x
 
+# Load environment variables if .env file exists
+if [ -f .env ]; then
+    export $(grep -v '^#' .env | xargs)
+fi
+TOKEN=${GITHUB_TOKEN:-$TOKEN}
+
 # Initialisation des répertoires s'ils ne sont pas présents
 test -d /workspace/build/ || sudo mkdir -p /workspace/build/
 test -d /workspace/build/rpms || sudo mkdir -p /workspace/build/rpms
@@ -10,7 +16,7 @@ test -d /workspace/archives/ || sudo mkdir -p /workspace/archives/
 
 # Fonction pour vérifier la dernière version GitHub
 check_last_release() {
-    local tag=$(curl --silent "https://api.github.com/repos/$1/releases/latest" | jq -r .tag_name)
+    local tag=$(curl --silent -H "Authorization: token $TOKEN" "https://api.github.com/repos/$1/releases/latest" | jq -r .tag_name)
     local clean_tag="${tag#v}"
     if [[ -z "$clean_tag" || "$clean_tag" == "null" ]]; then
         echo "1.0"
@@ -26,7 +32,7 @@ download_and_prepare() {
     local exporter=$2
     local type=$3
     local version=$(check_last_release "$repo")
-    local release_info=$(curl -s "https://api.github.com/repos/${repo}/releases/latest")
+    local release_info=$(curl -s -H "Authorization: token $TOKEN" "https://api.github.com/repos/${repo}/releases/latest")
 
     echo "$release_info" | jq -r --arg type "$type" '.assets[] | select(.name | endswith($type)) | .browser_download_url' | while read url; do
         local filename=$(basename "$url")
@@ -171,7 +177,7 @@ build_snmp_exporter() {
 }
 
 build_slurm_exporter(){
-  build_exporter "sckyzo/slurm_exporter" "slurm_exporter" "linux-amd64.tar.gz" "/workspace/exporter"
+  build_exporter "sckyzo/slurm_exporter" "slurm_exporter" "linux-amd64.tar.gz" "/workspace/exporter" 
 }
 
 build_rackpower_exporter(){

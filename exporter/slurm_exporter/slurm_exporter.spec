@@ -18,6 +18,8 @@ URL:           https://github.com/sckyzo/slurm_exporter
 Source0:       %{pkgname}-%{version}.linux-amd64.tar.gz
 BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
+%global __requires_exclude ^libc\.so\.6.*$  
+
 Obsoletes:     %{pkgname}
 
 %description
@@ -38,7 +40,7 @@ tar -xf %{SOURCE0}
 
 %changelog
 * Fri Feb 14 2024 Thomas Bourcey<thomas.bourcey@eviden.com> - 1.1
-- Replace vpenso by sckyzo slurm_exporter 0.30
+- Replace vpenso by cea slurm_exporter 0.20.1
 
 * Tue Jan 2 2024 Thomas Bourcey <thomas.bourcey@eviden.com> - 1.0.1
 - Adjusted spec file for archive without directory structure.
